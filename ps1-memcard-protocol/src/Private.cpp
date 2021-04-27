@@ -6,7 +6,7 @@
 
 #include "Private.hpp"
 
-namespace com::saxbophone::project::PRIVATE {
+namespace com::saxbophone::ps1_memcard_protocol::PRIVATE {
     bool library_works() {
         return true;
     }

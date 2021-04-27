@@ -17,7 +17,7 @@
 #ifndef COM_SAXBOPHONE_PROJECT_PUBLIC_HPP
 #define COM_SAXBOPHONE_PROJECT_PUBLIC_HPP
 
-namespace com::saxbophone::project {
+namespace com::saxbophone::ps1_memcard_protocol {
     /**
      * @brief Stub test function for sample project
      * @returns Whether the test library "works" or not, which is a vague

@@ -4,12 +4,12 @@ cmake_minimum_required(VERSION 3.15)
 
 # detect if Project is being used as a sub-project of another CMake project
 if(NOT DEFINED PROJECT_NAME)
-    set(PROJECT_SUBPROJECT OFF)
+    set(PS1_MEMCARD_PROTOCOL_SUBPROJECT OFF)
 else()
-    set(PROJECT_SUBPROJECT ON)
+    set(PS1_MEMCARD_PROTOCOL_SUBPROJECT ON)
 endif()
 
-project(project VERSION 0.3.0 LANGUAGES CXX)
+project(ps1-memcard-protocol VERSION 0.3.0 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -27,24 +27,24 @@ endif()
 
 # set some handy custom variables to detect Release-type builds from Debug-type ones
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(PROJECT_BUILD_DEBUG ON)
-    set(PROJECT_BUILD_RELEASE OFF)
+    set(PS1_MEMCARD_PROTOCOL_BUILD_DEBUG ON)
+    set(PS1_MEMCARD_PROTOCOL_BUILD_RELEASE OFF)
 else()
-    set(PROJECT_BUILD_DEBUG OFF)
-    set(PROJECT_BUILD_RELEASE ON)
+    set(PS1_MEMCARD_PROTOCOL_BUILD_DEBUG OFF)
+    set(PS1_MEMCARD_PROTOCOL_BUILD_RELEASE ON)
 endif()
 
-message(STATUS "[project] Build Mode: ${CMAKE_BUILD_TYPE}")
+message(STATUS "[ps1-memcard-protocol] Build Mode: ${CMAKE_BUILD_TYPE}")
 
 # set the C++ standard to use to C++20 always
-set(PROJECT_CXX_STANDARD "20")
-message(STATUS "[project] C++ Standard set to C++${PROJECT_CXX_STANDARD}")
-set(CMAKE_CXX_STANDARD ${PROJECT_CXX_STANDARD})
+set(PS1_MEMCARD_PROTOCOL_CXX_STANDARD "20")
+message(STATUS "[ps1-memcard-protocol] C++ Standard set to C++${PS1_MEMCARD_PROTOCOL_CXX_STANDARD}")
+set(CMAKE_CXX_STANDARD ${PS1_MEMCARD_PROTOCOL_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 # if building in Release mode, provide an option to explicitly enable tests if desired (always ON for other builds, OFF by default for Release builds)
-cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF PROJECT_BUILD_RELEASE ON)
+cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF PS1_MEMCARD_PROTOCOL_BUILD_RELEASE ON)
 
 # Premature Optimisation causes problems. Commented out code below allows detection and enabling of LTO.
 # It's not being used currently because it seems to cause linker errors with Clang++ on Ubuntu if the library
@@ -54,37 +54,37 @@ cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF 
 
 # include(CheckIPOSupported)
 # check_ipo_supported(RESULT IPO_SUPPORTED)
-# # If we're in Release mode, set PROJECT_USE_IPO to ON by default if it's detected as supported (user can always explicitly enable it in Release mode)
-# cmake_dependent_option(PROJECT_USE_IPO "Use Link-Time/Inter-Procedural Optimisation?" ${IPO_SUPPORTED} PROJECT_BUILD_RELEASE OFF)
-# if(PROJECT_USE_IPO)
-#     message(STATUS "[project] Link-Time-Optimisation Enabled")
+# # If we're in Release mode, set PS1_MEMCARD_PROTOCOL_USE_IPO to ON by default if it's detected as supported (user can always explicitly enable it in Release mode)
+# cmake_dependent_option(PS1_MEMCARD_PROTOCOL_USE_IPO "Use Link-Time/Inter-Procedural Optimisation?" ${IPO_SUPPORTED} PS1_MEMCARD_PROTOCOL_BUILD_RELEASE OFF)
+# if(PS1_MEMCARD_PROTOCOL_USE_IPO)
+#     message(STATUS "[ps1-memcard-protocol] Link-Time-Optimisation Enabled")
 # endif()
 
 set(
-    PROJECT_VERSION_STRING
+    PS1_MEMCARD_PROTOCOL_VERSION_STRING
     "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
 )
-set(PROJECT_ESCAPED_VERSION_STRING "\"${PROJECT_VERSION_STRING}\"")
+set(PS1_MEMCARD_PROTOCOL_ESCAPED_VERSION_STRING "\"${PS1_MEMCARD_PROTOCOL_VERSION_STRING}\"")
 # end basic metadata
 
 # This is a special target which only exists to capture compilation options
-# used for project and its tests. This is to avoid setting global compiler
+# used for ps1-memcard-protocol and its tests. This is to avoid setting global compiler
 # options which would be inherited by dependencies as well, which is bad
-# because project uses strict compiler warning options which not all other
-# projects can build successfully with.
+# because ps1-memcard-protocol uses strict compiler warning options which not all other
+# ps1-memcard-protocols can build successfully with.
 # Any target linked with this one will inherit the compiler options used for
-# project.
-add_library(project-compiler-options INTERFACE)
+# ps1-memcard-protocol.
+add_library(ps1-memcard-protocol-compiler-options INTERFACE)
 
 # used for enabling additional compiler options if supported
 include(CheckCXXCompilerFlag)
 
 function(enable_cxx_compiler_flag_if_supported flag)
-    message(STATUS "[project] Checking if compiler supports warning flag '${flag}'")
+    message(STATUS "[ps1-memcard-protocol] Checking if compiler supports warning flag '${flag}'")
     check_cxx_compiler_flag("${flag}" flag_supported)
     if(flag_supported)
-        message(STATUS "[project] Enabling warning flag '${flag}'")
-        target_compile_options(project-compiler-options INTERFACE "${flag}")
+        message(STATUS "[ps1-memcard-protocol] Enabling warning flag '${flag}'")
+        target_compile_options(ps1-memcard-protocol-compiler-options INTERFACE "${flag}")
     endif()
     unset(flag_supported CACHE)
 endfunction()
@@ -94,7 +94,7 @@ if (MSVC) # MSVC supports different warning options to GCC/Clang
     # add_compile_options(/W4) # set warning level 4
     enable_cxx_compiler_flag_if_supported("/W4")
     # if in debug mode, enable converting all warnings to errors too
-    if (PROJECT_BUILD_DEBUG)
+    if (PS1_MEMCARD_PROTOCOL_BUILD_DEBUG)
         # add_compile_options(/WX)
         enable_cxx_compiler_flag_if_supported("/WX")
     endif()
@@ -115,7 +115,7 @@ else() # GCC/Clang warning option
     # enable warnings about mistakes in Doxygen documentation
     enable_cxx_compiler_flag_if_supported("-Wdocumentation")
     # if in debug mode, enable converting all warnings to errors too
-    if (PROJECT_BUILD_DEBUG)
+    if (PS1_MEMCARD_PROTOCOL_BUILD_DEBUG)
         enable_cxx_compiler_flag_if_supported("-Werror")
         # exclude the following kinds of warnings from being converted into errors
         # unknown-pragma is useful to have as a warning but not as an error, if you have
@@ -136,10 +136,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 include(CPM)
 
 # library
-add_subdirectory(project)
+add_subdirectory(ps1-memcard-protocol)
 # unit tests --only enable if requested AND we're not building as a sub-project
-if(ENABLE_TESTS AND NOT PROJECT_SUBPROJECT)
-    message(STATUS "[project] Unit Tests Enabled")
+if(ENABLE_TESTS AND NOT PS1_MEMCARD_PROTOCOL_SUBPROJECT)
+    message(STATUS "[ps1-memcard-protocol] Unit Tests Enabled")
     add_subdirectory(tests)
     enable_testing()
 endif()

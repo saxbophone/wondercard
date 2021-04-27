@@ -7,9 +7,9 @@
 #ifndef COM_SAXBOPHONE_PROJECT_PRIVATE_HPP
 #define COM_SAXBOPHONE_PROJECT_PRIVATE_HPP
 
-#include <project/Public.hpp>
+#include <ps1-memcard-protocol/Public.hpp>
 
-namespace com::saxbophone::project::PRIVATE {
+namespace com::saxbophone::ps1_memcard_protocol::PRIVATE {
     bool library_works();
 }
 

@@ -1,6 +1,6 @@
 # top-level namespace source files
 target_sources(
-    project
+    ps1-memcard-protocol
         PRIVATE
             Private.cpp
             Public.cpp
