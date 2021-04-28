@@ -2,8 +2,7 @@
 target_sources(
     ps1-memcard-protocol
         PRIVATE
-            Private.cpp
-            Public.cpp
+            MemoryCard.cpp
 )
 # sub-namespace source directories
 # NOTE: none yet!
