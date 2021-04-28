@@ -173,7 +173,43 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        return {};
+        switch (this->_sub_state.get_id_state) {
+        // for these two states, command is supposed to be 0x00 but what can we do if it's not?
+        case MemoryCard::GetIdState::RECV_MEMCARD_ID_1:
+            data = 0x5A;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_MEMCARD_ID_2;
+            break;
+        case MemoryCard::GetIdState::RECV_MEMCARD_ID_2:
+            data = 0x5D;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_COMMAND_ACK_1;
+            break;
+        // for these two states, command is supposed to be 0x00 but what can we do if it's not?
+        case MemoryCard::GetIdState::RECV_COMMAND_ACK_1:
+            data = 0x5C;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_COMMAND_ACK_2;
+            break;
+        case MemoryCard::GetIdState::RECV_COMMAND_ACK_2:
+            data = 0x5D;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_INFO_1;
+            break;
+        case MemoryCard::GetIdState::RECV_INFO_1:
+            data = 0x04;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_INFO_2;
+            break;
+        case MemoryCard::GetIdState::RECV_INFO_2:
+            data = 0x00;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_INFO_3;
+            break;
+        case MemoryCard::GetIdState::RECV_INFO_3:
+            data = 0x00;
+            this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_INFO_4;
+            break;
+        case MemoryCard::GetIdState::RECV_INFO_4:
+            data = 0x80;
+            this->_state = MemoryCard::State::IDLE;
+            return false;
+        }
+        return true;
     }
 
     const std::uint8_t MemoryCard::_FLAG_INIT_VALUE = 0x08;

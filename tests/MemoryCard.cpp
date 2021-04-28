@@ -240,7 +240,12 @@ SCENARIO("Get Memory Card ID Command") {
                     THEN("The card responds with the expected response byte") {
                         for (std::size_t i = 0; i < 10; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 9) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
                             CHECK(output == expected_outputs[i]);
                         }
                     }
