@@ -71,8 +71,13 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
+        /**
+         * @brief Read-only flag indicating whether the card is powered on or not
+         */
+        const bool& powered_on;
+
     private:
-        bool powered_on;
+        bool _powered_on;
     };
 }
 

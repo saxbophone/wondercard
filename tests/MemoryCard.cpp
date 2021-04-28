@@ -11,12 +11,15 @@ using namespace com::saxbophone::ps1_memcard_protocol;
 SCENARIO("MemoryCard can be powered on when off and off when on") {
     GIVEN("A MemoryCard that is powered off") {
         MemoryCard card;
+        REQUIRE_FALSE(card.powered_on);
         THEN("The MemoryCard can be powered on successfully") {
             REQUIRE(card.power_on());
             AND_WHEN("The MemoryCard is powered on") {
+                REQUIRE(card.powered_on);
                 THEN("The MemoryCard can be powered off successfully") {
                     REQUIRE(card.power_off());
                     AND_WHEN("The MemoryCard is powered off") {
+                        REQUIRE_FALSE(card.powered_on);
                         THEN("The MemoryCard cannot be powered off successfully") {
                             CHECK_FALSE(card.power_off());
                         }

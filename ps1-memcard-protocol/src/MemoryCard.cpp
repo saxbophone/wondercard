@@ -18,16 +18,19 @@
 
 
 namespace com::saxbophone::ps1_memcard_protocol {
-    MemoryCard::MemoryCard() : powered_on(false) {}
+    MemoryCard::MemoryCard()
+      : powered_on(this->_powered_on)
+      , _powered_on(false)
+      {}
 
     bool MemoryCard::power_on() {
         // set powered_on if not already true and return true, otherwise false
-        return this->powered_on ? false : this->powered_on = true;
+        return this->powered_on ? false : this->_powered_on = true;
     }
 
     bool MemoryCard::power_off() {
         // set powered_on to false if not already and return true, else false
-        return !this->powered_on ? false : !(this->powered_on = false);
+        return !this->powered_on ? false : !(this->_powered_on = false);
     }
 
     bool MemoryCard::send(
