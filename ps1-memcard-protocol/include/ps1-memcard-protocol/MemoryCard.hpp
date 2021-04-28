@@ -33,7 +33,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         /**
          * @brief Default constructor
          * @details Initialises card data to all zeroes
-         * @warn Default card data may change in future versions of the software
+         * @warning Default card data may change in future versions of the software
          */
         MemoryCard();
 
