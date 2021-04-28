@@ -70,6 +70,9 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t> command,
             std::optional<std::uint8_t>& data
         );
+
+    private:
+        bool powered_on;
     };
 }
 
