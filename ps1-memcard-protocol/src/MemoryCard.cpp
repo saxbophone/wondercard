@@ -95,6 +95,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         MemoryCard::BYTES_IN_SECTOR
     > MemoryCard::sector(std::size_t i) {
         std::size_t sector_number = i & 0x03FF; // wrap to valid range
+        // TODO: consider using std::span::subspan() instead
         return std::span(
             this->_bytes.begin() + (sector_number << 7),
             MemoryCard::BYTES_IN_SECTOR
@@ -106,6 +107,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         MemoryCard::SECTORS_IN_BLOCK * MemoryCard::BYTES_IN_SECTOR
     > MemoryCard::block(std::size_t i) {
         std::size_t block_number = i & 0xFF; // wrap to valid range
+        // TODO: consider using std::span::subspan() instead
         return std::span(
             this->_bytes.begin() + (block_number << 13),
             MemoryCard::SECTORS_IN_BLOCK * MemoryCard::BYTES_IN_SECTOR
