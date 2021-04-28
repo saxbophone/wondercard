@@ -92,10 +92,8 @@ namespace com::saxbophone::ps1_memcard_protocol {
             SEND_ADDRESS_LSB,
             RECV_COMMAND_ACK_1,
             RECV_COMMAND_ACK_2,
-            RECV_BAD_SECTOR_1,
-            RECV_BAD_SECTOR_2,
-            RECV_ADDRESS_MSB,
-            RECV_ADDRESS_LSB,
+            RECV_CONFIRM_ADDRESS_MSB,
+            RECV_CONFIRM_ADDRESS_LSB,
             RECV_DATA_SECTOR,
             RECV_CHECKSUM,
             RECV_END_BYTE,
@@ -127,6 +125,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
 
         const static std::uint8_t _FLAG_INIT_VALUE;
         const static State _STARTING_STATE;
+        const static std::uint16_t _LAST_SECTOR;
 
         bool _powered_on;
         std::uint8_t _flag;  // special FLAG value, a kind of status register on card

@@ -99,7 +99,12 @@ SCENARIO("Reading Data from Memory Card") {
                     THEN("The card should respond with the expected read failure response") {
                         for (std::size_t i = 0; i < 10; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 9) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
                             CHECK(output == expected_outputs[i]);
                         }
                     }
@@ -114,20 +119,31 @@ SCENARIO("Reading Data from Memory Card") {
             std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
             std::optional<std::uint8_t> inputs[140] = {
                 0x81, 0x52, 0x00, 0x00, msb, lsb, 0x00, 0x00, 0x00, 0x00,
-                // remaining members set to zero, which is what we want
             };
+            // set remaining members to zero (can't default init because of optional)
+            for (std::size_t i = 10; i < 140; i++) {
+                inputs[i] = 0x00;
+            }
             AND_GIVEN("A sqeuence of expected response bytes indicating read data") {
                 std::optional<std::uint8_t> expected_outputs[140] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00, 0x5C, 0x5D, msb, lsb,
-                    // 128 zero bytes now expected to follow (card zero-initialised)
                     // checksum, "good read" magic end byte
                     [138] = msb ^ lsb, 0x47,
                 };
+                // 128 zero bytes are expected in output sector data
+                for (std::size_t i = 10; i < 138; i++) {
+                    expected_outputs[i] = 0x00;
+                }
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected read success response") {
                         for (std::size_t i = 0; i < 140; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 139) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
                             CHECK(output == expected_outputs[i]);
                         }
                     }
