@@ -12,6 +12,7 @@
 
 #include <optional>
 
+#include <cstddef>
 #include <cstdint>
 
 #include <ps1-memcard-protocol/MemoryCard.hpp>
@@ -20,6 +21,7 @@
 namespace com::saxbophone::ps1_memcard_protocol {
     MemoryCard::MemoryCard()
       : powered_on(this->_powered_on)
+      , bytes(this->_bytes)
       , _powered_on(false)
       , _flag(MemoryCard::_FLAG_INIT_VALUE)
       , _state(MemoryCard::_STARTING_STATE)
