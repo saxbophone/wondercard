@@ -173,6 +173,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
+        // XXX: This function is hell please refactor it
         switch (this->_sub_state.get_id_state) {
         // for these two states, command is supposed to be 0x00 but what can we do if it's not?
         case MemoryCard::GetIdState::RECV_MEMCARD_ID_1:
