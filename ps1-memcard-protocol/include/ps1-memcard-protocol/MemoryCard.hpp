@@ -99,8 +99,28 @@ namespace com::saxbophone::ps1_memcard_protocol {
             RECV_END_BYTE,
         };
 
-        enum class WriteState {};
-        enum class GetIdState {};
+        enum class WriteState {
+            RECV_MEMCARD_ID_1,
+            RECV_MEMCARD_ID_2,
+            SEND_ADDRESS_MSB,
+            SEND_ADDRESS_LSB,
+            SEND_DATA_SECTOR,
+            SEND_CHECKSUM,
+            RECV_COMMAND_ACK_1,
+            RECV_COMMAND_ACK_2,
+            RECV_END_BYTE,
+        };
+
+        enum class GetIdState {
+            RECV_MEMCARD_ID_1,
+            RECV_MEMCARD_ID_2,
+            RECV_COMMAND_ACK_1,
+            RECV_COMMAND_ACK_2,
+            RECV_INFO_1,
+            RECV_INFO_2,
+            RECV_INFO_3,
+            RECV_INFO_4,
+        };
 
         union SubState {
             ReadState read_state;
