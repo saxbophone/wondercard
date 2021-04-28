@@ -45,6 +45,34 @@ SCENARIO("MemoryCard ignores commands sent to it when powered off") {
     }
 }
 
+SCENARIO("MemoryCard ignores commands that are not memory card commands") {
+    GIVEN("A MemoryCard that is powered on") {
+        MemoryCard card;
+        // power up the card
+        REQUIRE(card.power_on());
+        AND_GIVEN("A command byte that is not 0x81 (memory card command)") {
+            std::uint8_t command = GENERATE(
+                take(
+                    100,
+                    filter(
+                        [](std::uint8_t i) { return i != 0x81; },
+                        random(0x00, 0xFF)
+                    )
+                )
+            );
+            INFO("command is:" << command);
+            WHEN("The command byte is sent to the MemoryCard") {
+                std::optional<std::uint8_t> response = std::nullopt;
+                bool ack = card.send(command, response);
+                THEN("The card does not acknowledge the command or send return data") {
+                    CHECK_FALSE(ack);
+                    CHECK(response == std::nullopt);
+                }
+            }
+        }
+    }
+}
+
 SCENARIO("Reading Data from Memory Card") {
     GIVEN("A MemoryCard that is zero-initialised and powered on") {
         MemoryCard card;
