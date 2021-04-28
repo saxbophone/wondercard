@@ -21,11 +21,20 @@ namespace com::saxbophone::ps1_memcard_protocol {
     MemoryCard::MemoryCard()
       : powered_on(this->_powered_on)
       , _powered_on(false)
+      , _flag(MemoryCard::_FLAG_INIT_VALUE)
+      , _state(MemoryCard::_STARTING_STATE)
       {}
 
     bool MemoryCard::power_on() {
-        // set powered_on if not already true and return true, otherwise false
-        return this->powered_on ? false : this->_powered_on = true;
+        if (!this->powered_on) { // card is currently off, okay to power on
+            // set powered on and reset flag value to default
+            this->_powered_on = true;
+            this->_flag = MemoryCard::_FLAG_INIT_VALUE;
+            this->_state = MemoryCard::_STARTING_STATE;
+            return true;
+        } else { // card is already powered on! no-op
+            return false;
+        }
     }
 
     bool MemoryCard::power_off() {
@@ -37,7 +46,69 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        // Don't ACK if card isn't powered on or command is not a memcard command
-        return this->powered_on && command == 0x81;
+        // don't do anything, including ACK, if card isn't powered on
+        if (!this->powered_on) {
+            return false;
+        } else {
+            switch (this->_state) {
+            case MemoryCard::State::IDLE:
+                if (command == 0x81) { // a Memory Card command
+                    this->_state = MemoryCard::State::AWAITING_COMMAND;
+                    return true;
+                } else { // ignore commands that aren't for Memory Cards
+                    return false;
+                }
+            case MemoryCard::State::AWAITING_COMMAND:
+                switch (command.value_or(0x00)) { // decode memory card command
+                case 0x52:
+                    this->_state = MemoryCard::State::READ_DATA_COMMAND;
+                    this->_sub_state.read_state = MemoryCard::ReadState::RECV_MEMCARD_ID_1;
+                    break;
+                case 0x57:
+                    this->_state = MemoryCard::State::WRITE_DATA_COMMAND;
+                    break;
+                case 0x53:
+                    this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
+                    break;
+                default:
+                    this->_state = MemoryCard::State::IDLE;
+                    break;
+                }
+                // always send FLAG in response
+                data = this->_flag;
+                return true; // ACK
+            // otherwise, use sub-state-machines
+            case MemoryCard::State::READ_DATA_COMMAND:
+                return read_data_command(command, data);
+            case MemoryCard::State::WRITE_DATA_COMMAND:
+                return write_data_command(command, data);
+            case MemoryCard::State::GET_MEMCARD_ID_COMMAND:
+                return get_memcard_id_command(command, data);
+            }
+        }
     }
+
+    bool MemoryCard::read_data_command(
+        std::optional<std::uint8_t> command,
+        std::optional<std::uint8_t>& data
+    ) {
+        return {};
+    }
+
+    bool MemoryCard::write_data_command(
+        std::optional<std::uint8_t> command,
+        std::optional<std::uint8_t>& data
+    ) {
+        return {};
+    }
+
+    bool MemoryCard::get_memcard_id_command(
+        std::optional<std::uint8_t> command,
+        std::optional<std::uint8_t>& data
+    ) {
+        return {};
+    }
+
+    const std::uint8_t MemoryCard::_FLAG_INIT_VALUE = 0x08;
+    const MemoryCard::State MemoryCard::_STARTING_STATE = MemoryCard::State::IDLE;
 }

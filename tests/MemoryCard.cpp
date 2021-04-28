@@ -63,7 +63,6 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
                     )
                 )
             );
-            INFO("command is:" << command);
             WHEN("The command byte is sent to the MemoryCard") {
                 std::optional<std::uint8_t> response = std::nullopt;
                 bool ack = card.send(command, response);
@@ -75,6 +74,8 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
         }
     }
 }
+
+// TODO: test case for invalid memory card commands!
 
 SCENARIO("Reading Data from Memory Card") {
     GIVEN("A MemoryCard that is zero-initialised and powered on") {

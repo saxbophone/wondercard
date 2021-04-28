@@ -77,7 +77,64 @@ namespace com::saxbophone::ps1_memcard_protocol {
         const bool& powered_on;
 
     private:
+        enum class State {
+            IDLE,                   /**< Not currently in a communication transaction */
+            AWAITING_COMMAND,       /**< Which Memory Card Command mode? */
+            READ_DATA_COMMAND,      /**< Reading Memory Card Mode */
+            WRITE_DATA_COMMAND,     /**< Writing Memory Card Mode */
+            GET_MEMCARD_ID_COMMAND, /**< Get Memory Card ID Mode */
+        };
+
+        enum class ReadState {
+            RECV_MEMCARD_ID_1,
+            RECV_MEMCARD_ID_2,
+            SEND_ADDRESS_MSB,
+            SEND_ADDRESS_LSB,
+            RECV_COMMAND_ACK_1,
+            RECV_COMMAND_ACK_2,
+            RECV_BAD_SECTOR_1,
+            RECV_BAD_SECTOR_2,
+            RECV_ADDRESS_MSB,
+            RECV_ADDRESS_LSB,
+            RECV_DATA_SECTOR,
+            RECV_CHECKSUM,
+            RECV_END_BYTE,
+        };
+
+        enum class WriteState {};
+        enum class GetIdState {};
+
+        union SubState {
+            ReadState read_state;
+            WriteState write_state;
+            GetIdState get_id_state;
+        };
+
+        bool read_data_command(
+            std::optional<std::uint8_t> command,
+            std::optional<std::uint8_t>& data
+        );
+
+        bool write_data_command(
+            std::optional<std::uint8_t> command,
+            std::optional<std::uint8_t>& data
+        );
+
+        bool get_memcard_id_command(
+            std::optional<std::uint8_t> command,
+            std::optional<std::uint8_t>& data
+        );
+
+        const static std::uint8_t _FLAG_INIT_VALUE;
+        const static State _STARTING_STATE;
+
         bool _powered_on;
+        std::uint8_t _flag;  // special FLAG value, a kind of status register on card
+        State _state;        // state machine state
+        SubState _sub_state; // sub-machine state
+        std::uint16_t _address; // sector of address to read/write
+        std::uint8_t _byte_counter; // index for tracking how many bytes read/written
+        std::uint8_t _checksum; // scratchpad value for calculating checksums
     };
 }
 
