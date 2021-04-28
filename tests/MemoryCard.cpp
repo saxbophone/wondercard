@@ -18,12 +18,12 @@ SCENARIO("MemoryCard can be powered on when off and off when on") {
                     REQUIRE(card.power_off());
                     AND_WHEN("The MemoryCard is powered off") {
                         THEN("The MemoryCard cannot be powered off successfully") {
-                            REQUIRE_FALSE(card.power_off());
+                            CHECK_FALSE(card.power_off());
                         }
                     }
                 }
                 THEN("The MemoryCard cannot be powered on successfully") {
-                    REQUIRE_FALSE(card.power_on());
+                    CHECK_FALSE(card.power_on());
                 }
             }
         }
@@ -67,8 +67,8 @@ SCENARIO("Reading Data from Memory Card") {
                     THEN("The card should respond with the expected read failure response") {
                         for (std::size_t i = 0; i < 10; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            REQUIRE(card.send(inputs[i], output)); // check card ACK
-                            REQUIRE(output == expected_outputs[i]);
+                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            CHECK(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -95,8 +95,8 @@ SCENARIO("Reading Data from Memory Card") {
                     THEN("The card should respond with the expected read success response") {
                         for (std::size_t i = 0; i < 140; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            REQUIRE(card.send(inputs[i], output)); // check card ACK
-                            REQUIRE(output == expected_outputs[i]);
+                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            CHECK(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -134,8 +134,8 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write failure response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            REQUIRE(card.send(inputs[i], output)); // check card ACK
-                            REQUIRE(output == expected_outputs[i]);
+                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            CHECK(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -164,8 +164,8 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write success response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            REQUIRE(card.send(inputs[i], output)); // check card ACK
-                            REQUIRE(output == expected_outputs[i]);
+                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            CHECK(output == expected_outputs[i]);
                         }
                     }
                 }
