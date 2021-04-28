@@ -34,6 +34,6 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        return true;
+        return this->powered_on;
     }
 }
