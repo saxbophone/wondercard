@@ -10,7 +10,28 @@
  *
  */
 
+#include <optional>
+
+#include <cstdint>
+
 #include <ps1-memcard-protocol/MemoryCard.hpp>
 
+
 namespace com::saxbophone::ps1_memcard_protocol {
+    MemoryCard::MemoryCard() {}
+
+    bool MemoryCard::power_on() {
+        return true;
+    }
+
+    bool MemoryCard::power_off() {
+        return true;
+    }
+
+    bool MemoryCard::send(
+        std::optional<std::uint8_t> command,
+        std::optional<std::uint8_t>& data
+    ) {
+        return true;
+    }
 }
