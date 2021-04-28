@@ -64,7 +64,7 @@ SCENARIO("Reading Data from Memory Card") {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00, 0x5C, 0x5D, 0xFF, 0xFF,
                 };
                 WHEN("The sequence of command bytes is sent to the card") {
-                    THEN("The card should respond with the expected read success response") {
+                    THEN("The card should respond with the expected read failure response") {
                         for (std::size_t i = 0; i < 10; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
                             REQUIRE(card.send(inputs[i], output)); // check card ACK
@@ -92,7 +92,7 @@ SCENARIO("Reading Data from Memory Card") {
                     [138] = msb ^ lsb, 0x47,
                 };
                 WHEN("The sequence of command bytes is sent to the card") {
-                    THEN("The card should respond with the expected read failure response") {
+                    THEN("The card should respond with the expected read success response") {
                         for (std::size_t i = 0; i < 140; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
                             REQUIRE(card.send(inputs[i], output)); // check card ACK
@@ -104,6 +104,74 @@ SCENARIO("Reading Data from Memory Card") {
         }
     }
     // TODO: tests for MemoryCards that contain non-zero data!
+}
+
+SCENARIO("Writing Data to Memory Card") {
+    GIVEN("A MemoryCard that is zero-initialised and powered on") {
+        MemoryCard card;
+        // power up the card
+        REQUIRE(card.power_on());
+        AND_GIVEN("A sequence of command bytes to write an invalid sector") {
+            // sector numbers are 16-bit
+            std::uint16_t sector = GENERATE(take(100, random(0x0400, 0xFFFF)));
+            // retrieve MSB and LSB of sector number
+            std::uint8_t msb = sector >> 8;
+            std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
+            std::optional<std::uint8_t> inputs[138] = {
+                0x81, 0x57, 0x00, 0x00, msb, lsb,
+                // 128 zero bytes now expected to follow (writing blanks)
+                // checksum and remaining blank bytes to read responses
+                [134] = msb ^ lsb, 0x00, 0x00, 0x00,
+            };
+            AND_GIVEN("A sqeuence of expected response bytes indicating bad sector") {
+                std::optional<std::uint8_t> expected_outputs[138] = {
+                    std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
+                    // next 128 bytes are 0x00 as data being written (no response)
+                    // checksum receive, acknowledge, end status byte = bad sector
+                    [134] = 0x00, 0x5C, 0x5D, 0xFF,
+                };
+                WHEN("The sequence of command bytes is sent to the card") {
+                    THEN("The card should respond with the expected write failure response") {
+                        for (std::size_t i = 0; i < 138; i++) {
+                            std::optional<std::uint8_t> output = std::nullopt;
+                            REQUIRE(card.send(inputs[i], output)); // check card ACK
+                            REQUIRE(output == expected_outputs[i]);
+                        }
+                    }
+                }
+            }
+        }
+        AND_GIVEN("A sequence of command bytes to write a valid sector") {
+            // sector numbers are 16-bit
+            std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
+            // retrieve MSB and LSB of sector number
+            std::uint8_t msb = sector >> 8;
+            std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
+            std::optional<std::uint8_t> inputs[138] = {
+                0x81, 0x57, 0x00, 0x00, msb, lsb,
+                // 128 zero bytes now expected to follow (writing blanks)
+                // checksum and remaining blank bytes to read responses
+                [134] = msb ^ lsb, 0x00, 0x00, 0x00,
+            };
+            AND_GIVEN("A sqeuence of expected response bytes indicating write success") {
+                std::optional<std::uint8_t> expected_outputs[138] = {
+                    std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
+                    // next 128 bytes are 0x00 as data being written (no response)
+                    // checksum receive, acknowledge, end status byte = Good Write
+                    [134] = 0x00, 0x5C, 0x5D, 0x47,
+                };
+                WHEN("The sequence of command bytes is sent to the card") {
+                    THEN("The card should respond with the expected write success response") {
+                        for (std::size_t i = 0; i < 138; i++) {
+                            std::optional<std::uint8_t> output = std::nullopt;
+                            REQUIRE(card.send(inputs[i], output)); // check card ACK
+                            REQUIRE(output == expected_outputs[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 SCENARIO("Get Memory Card ID Command") {
