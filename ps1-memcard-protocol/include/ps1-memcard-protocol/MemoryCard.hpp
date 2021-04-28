@@ -82,6 +82,16 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
+        constexpr std::span<
+            std::uint8_t,
+            MemoryCard::BYTES_IN_SECTOR
+        > sector(std::size_t i);
+
+        constexpr std::span<
+            std::uint8_t,
+            MemoryCard::SECTORS_IN_BLOCK * MemoryCard::BYTES_IN_SECTOR
+        > block(std::size_t i);
+
         /**
          * @brief Read-only flag indicating whether the card is powered on or not
          */
