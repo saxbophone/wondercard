@@ -171,6 +171,7 @@ SCENARIO("Writing Data to Memory Card") {
                 }
             }
         }
+        // TODO: Bad Checksum test
     }
 }
 
