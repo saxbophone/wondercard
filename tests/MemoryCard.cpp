@@ -9,7 +9,7 @@
 using namespace com::saxbophone::ps1_memcard_protocol;
 
 SCENARIO("MemoryCard can be powered on when off and off when on") {
-    GIVEN("A MemoryCard that is powered off (default state)") {
+    GIVEN("A MemoryCard that is powered off") {
         MemoryCard card;
         THEN("The MemoryCard can be powered on successfully") {
             REQUIRE(card.power_on());
@@ -25,6 +25,21 @@ SCENARIO("MemoryCard can be powered on when off and off when on") {
                 THEN("The MemoryCard cannot be powered on successfully") {
                     REQUIRE_FALSE(card.power_on());
                 }
+            }
+        }
+    }
+}
+
+SCENARIO("MemoryCard ignores commands sent to it when powered off") {
+    GIVEN("A MemoryCard that is powered off") {
+        MemoryCard card;
+        WHEN("A command is sent for the card") {
+            std::uint8_t command = 0x81; // generic: "hey memory card!" message
+            std::optional<std::uint8_t> response = std::nullopt;
+            bool ack = card.send(command, response);
+            THEN("The card does not acknowledge the command or send return data") {
+                CHECK_FALSE(ack);
+                CHECK(response == std::nullopt);
             }
         }
     }
