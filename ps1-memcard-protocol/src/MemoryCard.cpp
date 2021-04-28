@@ -34,6 +34,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        return this->powered_on;
+        // Don't ACK if card isn't powered on or command is not a memcard command
+        return this->powered_on && command == 0x81;
     }
 }
