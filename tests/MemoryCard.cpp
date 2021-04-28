@@ -31,3 +31,25 @@ TEST_CASE("Get Memory Card ID Command") {
     // power down the card
     REQUIRE(card.power_off());
 }
+
+SCENARIO("MemoryCard can be powered on when off and off when on") {
+    GIVEN("A MemoryCard that is powered off (default state)") {
+        MemoryCard card;
+        THEN("The MemoryCard can be powered on successfully") {
+            REQUIRE(card.power_on());
+            AND_WHEN("The MemoryCard is powered on") {
+                THEN("The MemoryCard can be powered off successfully") {
+                    REQUIRE(card.power_off());
+                    AND_WHEN("The MemoryCard is powered off") {
+                        THEN("The MemoryCard cannot be powered off successfully") {
+                            REQUIRE_FALSE(card.power_off());
+                        }
+                    }
+                }
+                THEN("The MemoryCard cannot be powered on successfully") {
+                    REQUIRE_FALSE(card.power_on());
+                }
+            }
+        }
+    }
+}
