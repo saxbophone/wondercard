@@ -72,6 +72,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
                     break;
                 case 0x53:
                     this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
+                    this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_MEMCARD_ID_1;
                     break;
                 default:
                     this->_state = MemoryCard::State::IDLE;
