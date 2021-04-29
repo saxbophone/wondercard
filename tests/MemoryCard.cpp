@@ -127,13 +127,13 @@ SCENARIO("Reading Data from Memory Card") {
             AND_GIVEN("A sqeuence of expected response bytes indicating read data") {
                 std::optional<std::uint8_t> expected_outputs[140] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00, 0x5C, 0x5D, msb, lsb,
-                    // checksum, "good read" magic end byte
-                    [138] = msb ^ lsb, 0x47,
                 };
                 // 128 zero bytes are expected in output sector data
                 for (std::size_t i = 10; i < 138; i++) {
                     expected_outputs[i] = 0x00;
                 }
+                expected_outputs[138] = msb ^ lsb; // checksum
+                expected_outputs[139] = 0x47;      // "good read" magic end byte
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected read success response") {
                         for (std::size_t i = 0; i < 140; i++) {
@@ -167,17 +167,18 @@ SCENARIO("Writing Data to Memory Card") {
             std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
             std::optional<std::uint8_t> inputs[138] = {
                 0x81, 0x57, 0x00, 0x00, msb, lsb,
-                // 128 zero bytes now expected to follow (writing blanks)
-                // checksum and remaining blank bytes to read responses
-                [134] = msb ^ lsb, 0x00, 0x00, 0x00,
+                // all other bytes should be zero, except checksum
             };
+            inputs[134] = msb ^ lsb; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating bad sector") {
                 std::optional<std::uint8_t> expected_outputs[138] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
                     // next 128 bytes are 0x00 as data being written (no response)
-                    // checksum receive, acknowledge, end status byte = bad sector
-                    [134] = 0x00, 0x5C, 0x5D, 0xFF,
                 };
+                expected_outputs[134] = 0x00; // checksum received
+                expected_outputs[135] = 0x5C; // ACK 1
+                expected_outputs[136] = 0x5D; // ACK 2
+                expected_outputs[137] = 0xFF; // end status = bad sector!
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected write failure response") {
                         for (std::size_t i = 0; i < 138; i++) {
@@ -198,16 +199,17 @@ SCENARIO("Writing Data to Memory Card") {
             std::optional<std::uint8_t> inputs[138] = {
                 0x81, 0x57, 0x00, 0x00, msb, lsb,
                 // 128 zero bytes now expected to follow (writing blanks)
-                // checksum and remaining blank bytes to read responses
-                [134] = msb ^ lsb, 0x00, 0x00, 0x00,
             };
+            inputs[134] = msb ^ lsb; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating write success") {
                 std::optional<std::uint8_t> expected_outputs[138] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
                     // next 128 bytes are 0x00 as data being written (no response)
-                    // checksum receive, acknowledge, end status byte = Good Write
-                    [134] = 0x00, 0x5C, 0x5D, 0x47,
                 };
+                expected_outputs[134] = 0x00; // checksum received
+                expected_outputs[135] = 0x5C; // ACK 1
+                expected_outputs[136] = 0x5D; // ACK 2
+                expected_outputs[137] = 0x47; // end status = good write!
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected write success response") {
                         for (std::size_t i = 0; i < 138; i++) {

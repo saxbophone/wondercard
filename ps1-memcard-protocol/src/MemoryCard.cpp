@@ -86,6 +86,8 @@ namespace com::saxbophone::ps1_memcard_protocol {
                 return write_data_command(command, data);
             case MemoryCard::State::GET_MEMCARD_ID_COMMAND:
                 return get_memcard_id_command(command, data);
+            default:
+                return false; // NACK
             }
         }
     }
