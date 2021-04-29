@@ -33,14 +33,6 @@ namespace com::saxbophone::ps1_memcard_protocol {
      */
     class MemoryCard {
     public:
-        constexpr static std::size_t BYTES_IN_SECTOR = 128u;
-        constexpr static std::size_t SECTORS_IN_BLOCK = 64u;
-        constexpr static std::size_t BLOCKS_IN_CARD = 16u;
-
-        typedef std::uint8_t Sector[MemoryCard::BYTES_IN_SECTOR];
-        typedef Sector Block[MemoryCard::SECTORS_IN_BLOCK];
-        typedef std::uint8_t RawBlock[MemoryCard::SECTORS_IN_BLOCK * MemoryCard::BYTES_IN_SECTOR];
-
         /**
          * @brief Default constructor
          * @details Initialises card data to all zeroes
@@ -82,27 +74,10 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
-        constexpr std::span<
-            std::uint8_t,
-            MemoryCard::BYTES_IN_SECTOR
-        > sector(std::size_t i);
-
-        constexpr std::span<
-            std::uint8_t,
-            MemoryCard::SECTORS_IN_BLOCK * MemoryCard::BYTES_IN_SECTOR
-        > block(std::size_t i);
-
         /**
          * @brief Read-only flag indicating whether the card is powered on or not
          */
         const bool& powered_on;
-
-        std::span<
-            std::uint8_t,
-            MemoryCard::BLOCKS_IN_CARD *
-            MemoryCard::SECTORS_IN_BLOCK *
-            MemoryCard::BYTES_IN_SECTOR
-        > bytes;
 
     private:
         enum class State {
@@ -182,13 +157,6 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::uint16_t _address; // sector of address to read/write
         std::uint8_t _byte_counter; // index for tracking how many bytes read/written
         std::uint8_t _checksum; // scratchpad value for calculating checksums
-        // actual memory card data
-        std::array<
-            std::uint8_t,
-            MemoryCard::BLOCKS_IN_CARD *
-            MemoryCard::SECTORS_IN_BLOCK *
-            MemoryCard::BYTES_IN_SECTOR
-        > _bytes;
     };
 }
 
