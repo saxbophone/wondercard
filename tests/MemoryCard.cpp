@@ -274,6 +274,63 @@ SCENARIO("Populate Memory Card data") {
                     CHECK(card.bytes[i] == data[i]);
                 }
             }
+            THEN("Data can be accessed correctly by Block") {
+                constexpr std::size_t BLOCK_SIZE = 8u * 1024u; // 8KiB blocks
+                for (std::size_t b = 0; b < 16; b++) {
+                    auto block = card.get_block(b);
+                    for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
+                        CHECK(block[i] == data[b * BLOCK_SIZE + i]);
+                    }
+                }
+            }
+            THEN("Data can be accessed correctly by Sector") {
+                constexpr std::size_t SECTOR_SIZE = 128u;
+                for (std::size_t s = 0; s < 1024; s++) {
+                    auto sector = card.get_sector(s);
+                    for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
+                        CHECK(sector[i] == data[s * SECTOR_SIZE + i]);
+                    }
+                }
+            }
+        }
+    }
+    GIVEN("A blank MemoryCard") {
+        MemoryCard card;
+        AND_GIVEN("Exactly 8KiB (one Block) of data") {
+            constexpr std::size_t BLOCK_SIZE = 8u * 1024u;
+            std::array<std::uint8_t, BLOCK_SIZE> data;
+            std::default_random_engine engine;
+            std::uniform_int_distribution<std::uint8_t> prng;
+            for (auto& b : data) {
+                b = prng(engine);
+            }
+            std::uint8_t b = GENERATE(range(0, 16));
+            WHEN("The data is copied to a specific Block") {
+                std::copy(data.begin(), data.end(), card.get_block(b).begin());
+                THEN("The correct range of MemoryCard data is written to") {
+                    for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
+                        CHECK(data[i] == card.bytes[b * BLOCK_SIZE + i]);
+                    }
+                }
+            }
+        }
+        AND_GIVEN("Exactly 128 Bytes (one Sector) of data") {
+            constexpr std::size_t SECTOR_SIZE = 128u;
+            std::array<std::uint8_t, SECTOR_SIZE> data;
+            std::default_random_engine engine;
+            std::uniform_int_distribution<std::uint8_t> prng;
+            for (auto& b : data) {
+                b = prng(engine);
+            }
+            std::uint8_t s = GENERATE(range(0, 1024));
+            WHEN("The data is copied to a specific Sector") {
+                std::copy(data.begin(), data.end(), card.get_sector(s).begin());
+                THEN("The correct range of MemoryCard data is written to") {
+                    for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
+                        CHECK(data[i] == card.bytes[s * SECTOR_SIZE + i]);
+                    }
+                }
+            }
         }
     }
 }

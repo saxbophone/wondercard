@@ -103,6 +103,14 @@ namespace com::saxbophone::ps1_memcard_protocol {
         }
     }
 
+    std::array<std::uint8_t, 8u * 1024u> MemoryCard::get_block(std::size_t i) {
+        return {};
+    }
+
+    std::array<std::uint8_t, 128u> MemoryCard::get_sector(std::size_t i) {
+        return {};
+    }
+
     bool MemoryCard::read_data_command(
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
