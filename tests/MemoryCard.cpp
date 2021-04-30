@@ -182,6 +182,13 @@ SCENARIO("Writing Data to Memory Card") {
         // power up the card
         REQUIRE(card.power_on());
         AND_GIVEN("A sequence of command bytes to write an invalid sector") {
+            constexpr std::size_t SECTOR_SIZE = 128u;
+            auto data = generate_random_bytes<SECTOR_SIZE>();
+            // calculate data checksum for later use
+            std::uint8_t data_checksum = 0x00;
+            for (auto byte : data) {
+                data_checksum ^= byte;
+            }
             // sector numbers are 16-bit
             std::uint16_t sector = GENERATE(take(100, random(0x0400, 0xFFFF)));
             // retrieve MSB and LSB of sector number
@@ -189,9 +196,13 @@ SCENARIO("Writing Data to Memory Card") {
             std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
             std::optional<std::uint8_t> inputs[138] = {
                 0x81, 0x57, 0x00, 0x00, msb, lsb,
-                // all other bytes should be zero, except checksum
+                // all other bytes should be zero, except data and checksum
             };
-            inputs[134] = msb ^ lsb; // checksum
+            // set sector data to write to card
+            for (std::size_t i = 0; i < 128; i++) {
+                inputs[5 + i] = data[i];
+            }
+            inputs[134] = msb ^ lsb ^ data_checksum; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating bad sector") {
                 std::optional<std::uint8_t> expected_outputs[138] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
@@ -222,6 +233,13 @@ SCENARIO("Writing Data to Memory Card") {
             }
         }
         AND_GIVEN("A sequence of command bytes to write a valid sector") {
+            constexpr std::size_t SECTOR_SIZE = 128u;
+            auto data = generate_random_bytes<SECTOR_SIZE>();
+            // calculate data checksum for later use
+            std::uint8_t data_checksum = 0x00;
+            for (auto byte : data) {
+                data_checksum ^= byte;
+            }
             // sector numbers are 16-bit
             std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
             // retrieve MSB and LSB of sector number
@@ -231,7 +249,11 @@ SCENARIO("Writing Data to Memory Card") {
                 0x81, 0x57, 0x00, 0x00, msb, lsb,
                 // 128 zero bytes now expected to follow (writing blanks)
             };
-            inputs[134] = msb ^ lsb; // checksum
+            // set sector data to write to card
+            for (std::size_t i = 0; i < 128; i++) {
+                inputs[5 + i] = data[i];
+            }
+            inputs[134] = msb ^ lsb ^ data_checksum; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating write success") {
                 std::optional<std::uint8_t> expected_outputs[138] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
@@ -256,6 +278,12 @@ SCENARIO("Writing Data to Memory Card") {
                                 CHECK_FALSE(ack);
                             }
                             CHECK(output == expected_outputs[i]);
+                        }
+                    }
+                    THEN("The correct card sector should contain the written data") {
+                        auto sec = card.get_sector(sector);
+                        for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
+                            CHECK(sec[i] == data[i]);
                         }
                     }
                 }
