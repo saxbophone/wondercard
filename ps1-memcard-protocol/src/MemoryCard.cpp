@@ -227,14 +227,22 @@ namespace com::saxbophone::ps1_memcard_protocol {
             this->_byte_counter = 0x00; // init counter
             this->_sub_state.write_state = MemoryCard::WriteState::SEND_DATA_SECTOR;
             break;
-        case MemoryCard::WriteState::SEND_DATA_SECTOR:
-            // XXX: only dummy-write is implemented for now
+        case MemoryCard::WriteState::SEND_DATA_SECTOR:{
+            // grab byte, converting Z-state to 0xFF if encountered (shouldn't, but...)
+            std::uint8_t write_byte = command.value_or(0xFF);
+            // so long as the sector address is valid, write the sector
+            if (this->_address != 0xFFFF) {
+                this->get_sector(this->_address)[this->_byte_counter] = write_byte;
+            }
+            // update the checksum
+            this->_checksum ^= write_byte;
             this->_byte_counter++;
             data = 0x00;
             if (this->_byte_counter == 128u) {
                 this->_sub_state.write_state = MemoryCard::WriteState::SEND_CHECKSUM;
             }
             break;
+        }
         case MemoryCard::WriteState::SEND_CHECKSUM:
             // TODO: validate checksum here
             data = 0x00;

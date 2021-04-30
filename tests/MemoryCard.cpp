@@ -197,7 +197,7 @@ SCENARIO("Writing Data to Memory Card") {
             };
             // set sector data to write to card
             for (std::size_t i = 0; i < 128; i++) {
-                inputs[5 + i] = data[i];
+                inputs[6 + i] = data[i];
             }
             inputs[134] = msb ^ lsb ^ data_checksum; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating bad sector") {
@@ -248,7 +248,7 @@ SCENARIO("Writing Data to Memory Card") {
             };
             // set sector data to write to card
             for (std::size_t i = 0; i < 128; i++) {
-                inputs[5 + i] = data[i];
+                inputs[6 + i] = data[i];
             }
             inputs[134] = msb ^ lsb ^ data_checksum; // checksum
             AND_GIVEN("A sqeuence of expected response bytes indicating write success") {
