@@ -92,8 +92,15 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
 // TODO: test case for invalid memory card commands!
 
 SCENARIO("Reading Data from Memory Card") {
-    GIVEN("A MemoryCard that is zero-initialised and powered on") {
-        MemoryCard card;
+    GIVEN("A MemoryCard that is initialised with random data and powered on") {
+        constexpr std::size_t CARD_SIZE = 128u * 1024u;
+        auto data = generate_random_bytes<CARD_SIZE>();
+        // calculate data checksum for later use
+        std::uint8_t data_checksum = 0x00;
+        for (auto byte : data) {
+            data_checksum ^= byte;
+        }
+        MemoryCard card(data);
         // power up the card
         REQUIRE(card.power_on());
         AND_GIVEN("A sequence of command bytes to read an invalid sector") {
@@ -142,11 +149,12 @@ SCENARIO("Reading Data from Memory Card") {
                 std::optional<std::uint8_t> expected_outputs[140] = {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00, 0x5C, 0x5D, msb, lsb,
                 };
-                // 128 zero bytes are expected in output sector data
+                // set expected sector data to read from card
+                auto sec = card.get_sector(sector);
                 for (std::size_t i = 10; i < 138; i++) {
-                    expected_outputs[i] = 0x00;
+                    inputs[i] = sec[i];
                 }
-                expected_outputs[138] = msb ^ lsb; // checksum
+                expected_outputs[138] = msb ^ lsb ^ data_checksum; // checksum
                 expected_outputs[139] = 0x47;      // "good read" magic end byte
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected read success response") {
