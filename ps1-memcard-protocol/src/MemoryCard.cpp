@@ -268,7 +268,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
     }
 
     bool MemoryCard::get_memcard_id_command(
-        std::optional<std::uint8_t> command,
+        std::optional<std::uint8_t>,
         std::optional<std::uint8_t>& data
     ) {
         // XXX: This function is hell please refactor it
