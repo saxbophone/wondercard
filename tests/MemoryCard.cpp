@@ -151,10 +151,12 @@ SCENARIO("Reading Data from Memory Card") {
                 };
                 // set expected sector data to read from card
                 auto sec = card.get_sector(sector);
-                for (std::size_t i = 10; i < 138; i++) {
-                    inputs[i] = sec[i];
+                std::uint8_t sector_checksum = 0x00;
+                for (std::size_t i = 0; i < 128; i++) {
+                    expected_outputs[10 + i] = sec[i];
+                    sector_checksum ^= sec[i];
                 }
-                expected_outputs[138] = msb ^ lsb ^ data_checksum; // checksum
+                expected_outputs[138] = msb ^ lsb ^ sector_checksum; // checksum
                 expected_outputs[139] = 0x47;      // "good read" magic end byte
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected read success response") {

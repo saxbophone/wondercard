@@ -175,8 +175,10 @@ namespace com::saxbophone::ps1_memcard_protocol {
                 break;
             }
         case MemoryCard::ReadState::RECV_DATA_SECTOR:
-            // XXX: only all-zero data is implemented for now
-            data = 0x00;
+            // reply with current byte from the correct sector
+            data = this->get_sector(this->_address)[this->_byte_counter];
+            // update checksum
+            this->_checksum ^= data.value();
             this->_byte_counter++;
             if (this->_byte_counter == 128u) {
                 this->_sub_state.read_state = MemoryCard::ReadState::RECV_CHECKSUM;
