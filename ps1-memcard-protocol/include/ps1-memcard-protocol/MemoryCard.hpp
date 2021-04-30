@@ -33,12 +33,17 @@ namespace com::saxbophone::ps1_memcard_protocol {
      */
     class MemoryCard {
     public:
+                                            // blocks sectors bytes
+        static constexpr std::size_t SIZE_BYTES = 16u * 64u * 128u;
+
         /**
          * @brief Default constructor
          * @details Initialises card data to all zeroes
          * @warning Default card data may change in future versions of the software
          */
         MemoryCard();
+
+        MemoryCard(std::span<std::uint8_t, SIZE_BYTES> data);
 
         /**
          * @brief Simulates powering up the card, e.g. when inserted into slot
@@ -78,6 +83,8 @@ namespace com::saxbophone::ps1_memcard_protocol {
          * @brief Read-only flag indicating whether the card is powered on or not
          */
         const bool& powered_on;
+
+        std::span<std::uint8_t, SIZE_BYTES> bytes;
 
     private:
         enum class State {
@@ -157,6 +164,8 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::uint16_t _address; // sector of address to read/write
         std::uint8_t _byte_counter; // index for tracking how many bytes read/written
         std::uint8_t _checksum; // scratchpad value for calculating checksums
+        // raw card data bytes
+        std::array<std::uint8_t, SIZE_BYTES> _bytes;
     };
 }
 

@@ -10,7 +10,9 @@
  *
  */
 
+#include <array>
 #include <optional>
+#include <span>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,10 +23,19 @@
 namespace com::saxbophone::ps1_memcard_protocol {
     MemoryCard::MemoryCard()
       : powered_on(this->_powered_on)
+      , bytes(this->_bytes)
       , _powered_on(false)
       , _flag(MemoryCard::_FLAG_INIT_VALUE)
       , _state(MemoryCard::_STARTING_STATE)
       {}
+
+    MemoryCard::MemoryCard(
+        std::span<std::uint8_t, MemoryCard::SIZE_BYTES> data
+    )
+      : MemoryCard()
+      {
+        std::copy(data.begin(), data.end(), this->_bytes.begin());
+    }
 
     bool MemoryCard::power_on() {
         if (!this->powered_on) { // card is currently off, okay to power on

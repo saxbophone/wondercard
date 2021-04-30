@@ -1,4 +1,5 @@
 #include <optional>
+#include <random>
 
 #include <cstdint>
 
@@ -251,6 +252,26 @@ SCENARIO("Get Memory Card ID Command") {
                             CHECK(output == expected_outputs[i]);
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Populate Memory Card data") {
+    GIVEN("Exactly 128KiB of data") {
+        constexpr std::size_t CARD_SIZE = 128u * 1024u;
+        std::array<std::uint8_t, CARD_SIZE> data;
+        std::default_random_engine engine;
+        std::uniform_int_distribution<std::uint8_t> prng;
+        for (auto& b : data) {
+            b = prng(engine);
+        }
+        WHEN("A MemoryCard is constructed with a span of the data passed to it") {
+            MemoryCard card(data);
+            THEN("The MemoryCard bytes should be identical to those of the data") {
+                for (std::size_t i = 0; i < CARD_SIZE; i++) {
+                    CHECK(card.bytes[i] == data[i]);
                 }
             }
         }
