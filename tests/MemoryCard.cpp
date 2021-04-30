@@ -15,7 +15,7 @@ static std::array<std::uint8_t, SIZE> generate_random_bytes() {
     std::array<std::uint8_t, SIZE> data;
     std::default_random_engine engine;
     // N.B: Can't use uint8_t for type as generator doesn't support char types
-    std::uniform_int_distribution<std::uint16_t> prng;
+    std::uniform_int_distribution<std::uint16_t> prng(0x0000, 0x00FF);
     for (auto& d : data) {
         d = prng(engine);
     }
