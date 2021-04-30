@@ -271,7 +271,7 @@ SCENARIO("Populate Memory Card data") {
             MemoryCard card(data);
             THEN("The MemoryCard bytes should be identical to those of the data") {
                 for (std::size_t i = 0; i < CARD_SIZE; i++) {
-                    CHECK(card.bytes[i] == data[i]);
+                    REQUIRE(card.bytes[i] == data[i]);
                 }
             }
             THEN("Data can be accessed correctly by Block") {
@@ -279,7 +279,7 @@ SCENARIO("Populate Memory Card data") {
                 for (std::size_t b = 0; b < 16; b++) {
                     auto block = card.get_block(b);
                     for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
-                        CHECK(block[i] == data[b * BLOCK_SIZE + i]);
+                        REQUIRE(block[i] == data[b * BLOCK_SIZE + i]);
                     }
                 }
             }
@@ -288,7 +288,7 @@ SCENARIO("Populate Memory Card data") {
                 for (std::size_t s = 0; s < 1024; s++) {
                     auto sector = card.get_sector(s);
                     for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
-                        CHECK(sector[i] == data[s * SECTOR_SIZE + i]);
+                        REQUIRE(sector[i] == data[s * SECTOR_SIZE + i]);
                     }
                 }
             }
@@ -309,7 +309,7 @@ SCENARIO("Populate Memory Card data") {
                 std::copy(data.begin(), data.end(), card.get_block(b).begin());
                 THEN("The correct range of MemoryCard data is written to") {
                     for (std::size_t i = 0; i < BLOCK_SIZE; i++) {
-                        CHECK(data[i] == card.bytes[b * BLOCK_SIZE + i]);
+                        REQUIRE(data[i] == card.bytes[b * BLOCK_SIZE + i]);
                     }
                 }
             }
@@ -322,12 +322,12 @@ SCENARIO("Populate Memory Card data") {
             for (auto& b : data) {
                 b = prng(engine);
             }
-            std::uint8_t s = GENERATE(range(0, 1024));
+            std::uint8_t s = GENERATE(take(100, random(0, 1024)));
             WHEN("The data is copied to a specific Sector") {
                 std::copy(data.begin(), data.end(), card.get_sector(s).begin());
                 THEN("The correct range of MemoryCard data is written to") {
                     for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
-                        CHECK(data[i] == card.bytes[s * SECTOR_SIZE + i]);
+                        REQUIRE(data[i] == card.bytes[s * SECTOR_SIZE + i]);
                     }
                 }
             }
