@@ -7,7 +7,20 @@
 
 #include <ps1-memcard-protocol/MemoryCard.hpp>
 
+
 using namespace com::saxbophone::ps1_memcard_protocol;
+
+template<std::size_t SIZE>
+static std::array<std::uint8_t, SIZE> generate_random_bytes() {
+    std::array<std::uint8_t, SIZE> data;
+    std::default_random_engine engine;
+    // N.B: Can't use uint8_t for type as generator doesn't support char types
+    std::uniform_int_distribution<std::uint16_t> prng;
+    for (auto& d : data) {
+        d = prng(engine);
+    }
+    return data;
+}
 
 SCENARIO("MemoryCard can be powered on when off and off when on") {
     GIVEN("A MemoryCard that is powered off") {
@@ -261,12 +274,10 @@ SCENARIO("Get Memory Card ID Command") {
 SCENARIO("Populate Memory Card data") {
     GIVEN("Exactly 128KiB of data") {
         constexpr std::size_t CARD_SIZE = 128u * 1024u;
-        std::array<std::uint8_t, CARD_SIZE> data;
-        std::default_random_engine engine;
-        std::uniform_int_distribution<std::uint8_t> prng;
-        for (auto& b : data) {
-            b = prng(engine);
-        }
+        std::array<
+            std::uint8_t,
+            CARD_SIZE
+        > data = generate_random_bytes<CARD_SIZE>();
         WHEN("A MemoryCard is constructed with a span of the data passed to it") {
             MemoryCard card(data);
             THEN("The MemoryCard bytes should be identical to those of the data") {
@@ -298,12 +309,10 @@ SCENARIO("Populate Memory Card data") {
         MemoryCard card;
         AND_GIVEN("Exactly 8KiB (one Block) of data") {
             constexpr std::size_t BLOCK_SIZE = 8u * 1024u;
-            std::array<std::uint8_t, BLOCK_SIZE> data;
-            std::default_random_engine engine;
-            std::uniform_int_distribution<std::uint8_t> prng;
-            for (auto& b : data) {
-                b = prng(engine);
-            }
+            std::array<
+                std::uint8_t,
+                BLOCK_SIZE
+            > data = generate_random_bytes<BLOCK_SIZE>();
             std::uint8_t b = GENERATE(range(0, 16));
             WHEN("The data is copied to a specific Block") {
                 std::copy(data.begin(), data.end(), card.get_block(b).begin());
@@ -316,12 +325,10 @@ SCENARIO("Populate Memory Card data") {
         }
         AND_GIVEN("Exactly 128 Bytes (one Sector) of data") {
             constexpr std::size_t SECTOR_SIZE = 128u;
-            std::array<std::uint8_t, SECTOR_SIZE> data;
-            std::default_random_engine engine;
-            std::uniform_int_distribution<std::uint8_t> prng;
-            for (auto& b : data) {
-                b = prng(engine);
-            }
+            std::array<
+                std::uint8_t,
+                SECTOR_SIZE
+            > data = generate_random_bytes<SECTOR_SIZE>();
             std::uint8_t s = GENERATE(take(100, random(0, 1024)));
             WHEN("The data is copied to a specific Sector") {
                 std::copy(data.begin(), data.end(), card.get_sector(s).begin());
