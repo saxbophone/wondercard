@@ -33,8 +33,14 @@ namespace com::saxbophone::ps1_memcard_protocol {
      */
     class MemoryCard {
     public:
-                                            // blocks sectors bytes
-        static constexpr std::size_t SIZE_BYTES = 16u * 64u * 128u;
+        static constexpr std::size_t CARD_BLOCK_COUNT = 16u;
+        static constexpr std::size_t BLOCK_SECTOR_COUNT = 64u;
+        static constexpr std::size_t SECTOR_SIZE = 128u; // 128 bytes
+        static constexpr std::size_t BLOCK_SIZE = BLOCK_SECTOR_COUNT * SECTOR_SIZE;
+        static constexpr std::size_t CARD_SIZE = CARD_BLOCK_COUNT * BLOCK_SIZE;
+
+        typedef std::span<std::uint8_t, BLOCK_SIZE> Block;
+        typedef std::span<std::uint8_t, SECTOR_SIZE> Sector;
 
         /**
          * @brief Default constructor
@@ -43,7 +49,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
          */
         MemoryCard();
 
-        MemoryCard(std::span<std::uint8_t, SIZE_BYTES> data);
+        MemoryCard(std::span<std::uint8_t, CARD_SIZE> data);
 
         /**
          * @brief Simulates powering up the card, e.g. when inserted into slot
@@ -79,16 +85,16 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
-        std::span<std::uint8_t, 8u * 1024u> get_block(std::size_t i);
+        Block get_block(std::size_t i);
 
-        std::span<std::uint8_t, 128u> get_sector(std::size_t i);
+        Sector get_sector(std::size_t i);
 
         /**
          * @brief Read-only flag indicating whether the card is powered on or not
          */
         const bool& powered_on;
 
-        std::span<std::uint8_t, SIZE_BYTES> bytes;
+        std::span<std::uint8_t, CARD_SIZE> bytes;
 
     private:
         enum class State {
@@ -169,7 +175,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::uint8_t _byte_counter; // index for tracking how many bytes read/written
         std::uint8_t _checksum; // scratchpad value for calculating checksums
         // raw card data bytes
-        std::array<std::uint8_t, SIZE_BYTES> _bytes;
+        std::array<std::uint8_t, CARD_SIZE> _bytes;
     };
 }
 

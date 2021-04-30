@@ -30,7 +30,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
       {}
 
     MemoryCard::MemoryCard(
-        std::span<std::uint8_t, MemoryCard::SIZE_BYTES> data
+        std::span<std::uint8_t, MemoryCard::CARD_SIZE> data
     )
       : MemoryCard()
       {
@@ -103,12 +103,12 @@ namespace com::saxbophone::ps1_memcard_protocol {
         }
     }
 
-    std::span<std::uint8_t, 8u * 1024u> MemoryCard::get_block(std::size_t i) {
-        return this->bytes.subspan(i * 8u * 1024u, 1024u);
+    MemoryCard::Block MemoryCard::get_block(std::size_t i) {
+        return this->bytes.subspan(i * MemoryCard::BLOCK_SIZE, MemoryCard::BLOCK_SIZE);
     }
 
-    std::span<std::uint8_t, 128u> MemoryCard::get_sector(std::size_t i) {
-        return this->bytes.subspan(i * 128u, 128u);
+    MemoryCard::Sector MemoryCard::get_sector(std::size_t i) {
+        return this->bytes.subspan(i * MemoryCard::SECTOR_SIZE, MemoryCard::SECTOR_SIZE);
     }
 
     bool MemoryCard::read_data_command(
