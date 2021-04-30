@@ -80,6 +80,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
                     break;
                 case 0x57:
                     this->_state = MemoryCard::State::WRITE_DATA_COMMAND;
+                    this->_sub_state.write_state = MemoryCard::WriteState::RECV_MEMCARD_ID_1;
                     break;
                 case 0x53:
                     this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
@@ -197,7 +198,63 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        return {};
+        switch (this->_sub_state.write_state) {
+        // for these two states, command is supposed to be 0x00 but what can we do if it's not?
+        case MemoryCard::WriteState::RECV_MEMCARD_ID_1:
+            data = 0x5A;
+            this->_sub_state.write_state = MemoryCard::WriteState::RECV_MEMCARD_ID_2;
+            break;
+        case MemoryCard::WriteState::RECV_MEMCARD_ID_2:
+            data = 0x5D;
+            this->_sub_state.write_state = MemoryCard::WriteState::SEND_ADDRESS_MSB;
+            break;
+        case MemoryCard::WriteState::SEND_ADDRESS_MSB:
+            this->_checksum = command.value_or(0xFF); // reset checksum
+            this->_address = (std::uint16_t)this->_checksum << 8;
+            data = 0x00;
+            this->_sub_state.write_state = MemoryCard::WriteState::SEND_ADDRESS_LSB;
+            break;
+        case MemoryCard::WriteState::SEND_ADDRESS_LSB:
+            this->_address |= command.value_or(0xFF);
+            this->_checksum ^= (std::uint8_t)(this->_address & 0x00FF);
+            // detect invalid sectors (out of bounds)
+            if (this->_address > MemoryCard::_LAST_SECTOR) {
+                this->_address = 0xFFFF; // poison value
+            }
+            data = 0x00;
+            this->_byte_counter = 0x00; // init counter
+            this->_sub_state.write_state = MemoryCard::WriteState::SEND_DATA_SECTOR;
+            break;
+        case MemoryCard::WriteState::SEND_DATA_SECTOR:
+            // XXX: only dummy-write is implemented for now
+            this->_byte_counter++;
+            data = 0x00;
+            if (this->_byte_counter == 128u) {
+                this->_sub_state.write_state = MemoryCard::WriteState::SEND_CHECKSUM;
+            }
+            break;
+        case MemoryCard::WriteState::SEND_CHECKSUM:
+            // TODO: validate checksum here
+            data = 0x00;
+            this->_sub_state.write_state = MemoryCard::WriteState::RECV_COMMAND_ACK_1;
+            break;
+        case MemoryCard::WriteState::RECV_COMMAND_ACK_1:
+            data = 0x5C;
+            this->_sub_state.write_state = MemoryCard::WriteState::RECV_COMMAND_ACK_2;
+            break;
+        case MemoryCard::WriteState::RECV_COMMAND_ACK_2:
+            data = 0x5D;
+            this->_sub_state.write_state = MemoryCard::WriteState::RECV_END_BYTE;
+            break;
+        case MemoryCard::WriteState::RECV_END_BYTE:
+            /*
+             * status end byte:
+             * 0x47 = Good, 0x4E = Bad Checksum, 0xFF = Bad Sector
+             */
+            data = this->_address == 0xFFFF ? 0xFF : 0x47;
+            return false;
+        }
+        return true;
     }
 
     bool MemoryCard::get_memcard_id_command(

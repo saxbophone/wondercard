@@ -189,6 +189,9 @@ SCENARIO("Writing Data to Memory Card") {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
                     // next 128 bytes are 0x00 as data being written (no response)
                 };
+                for (std::size_t i = 6; i < 134; i++) {
+                    expected_outputs[i] = 0x00;
+                }
                 expected_outputs[134] = 0x00; // checksum received
                 expected_outputs[135] = 0x5C; // ACK 1
                 expected_outputs[136] = 0x5D; // ACK 2
@@ -197,7 +200,13 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write failure response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            INFO(i);
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 137) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
                             CHECK(output == expected_outputs[i]);
                         }
                     }
@@ -220,6 +229,9 @@ SCENARIO("Writing Data to Memory Card") {
                     std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
                     // next 128 bytes are 0x00 as data being written (no response)
                 };
+                for (std::size_t i = 6; i < 134; i++) {
+                    expected_outputs[i] = 0x00;
+                }
                 expected_outputs[134] = 0x00; // checksum received
                 expected_outputs[135] = 0x5C; // ACK 1
                 expected_outputs[136] = 0x5D; // ACK 2
@@ -228,7 +240,13 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write success response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            CHECK(card.send(inputs[i], output)); // check card ACK
+                            INFO(i);
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 137) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
                             CHECK(output == expected_outputs[i]);
                         }
                     }
