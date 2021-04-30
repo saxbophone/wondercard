@@ -104,11 +104,19 @@ namespace com::saxbophone::ps1_memcard_protocol {
     }
 
     MemoryCard::Block MemoryCard::get_block(std::size_t i) {
-        return this->bytes.subspan(i * MemoryCard::BLOCK_SIZE, MemoryCard::BLOCK_SIZE);
+        // TODO: validate Block number
+        return MemoryCard::Block(
+            this->_bytes.begin() + i * MemoryCard::BLOCK_SIZE,
+            MemoryCard::BLOCK_SIZE
+        );
     }
 
     MemoryCard::Sector MemoryCard::get_sector(std::size_t i) {
-        return this->bytes.subspan(i * MemoryCard::SECTOR_SIZE, MemoryCard::SECTOR_SIZE);
+        // TODO: validate Sector number
+        return MemoryCard::Sector(
+            this->_bytes.begin() + i * MemoryCard::SECTOR_SIZE,
+            MemoryCard::SECTOR_SIZE
+        );
     }
 
     bool MemoryCard::read_data_command(
