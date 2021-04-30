@@ -95,11 +95,6 @@ SCENARIO("Reading Data from Memory Card") {
     GIVEN("A MemoryCard that is initialised with random data and powered on") {
         constexpr std::size_t CARD_SIZE = 128u * 1024u;
         auto data = generate_random_bytes<CARD_SIZE>();
-        // calculate data checksum for later use
-        std::uint8_t data_checksum = 0x00;
-        for (auto byte : data) {
-            data_checksum ^= byte;
-        }
         MemoryCard card(data);
         // power up the card
         REQUIRE(card.power_on());
@@ -151,12 +146,12 @@ SCENARIO("Reading Data from Memory Card") {
                 };
                 // set expected sector data to read from card
                 auto sec = card.get_sector(sector);
-                std::uint8_t sector_checksum = 0x00;
+                std::uint8_t data_checksum = 0x00;
                 for (std::size_t i = 0; i < 128; i++) {
                     expected_outputs[10 + i] = sec[i];
-                    sector_checksum ^= sec[i];
+                    data_checksum ^= sec[i];
                 }
-                expected_outputs[138] = msb ^ lsb ^ sector_checksum; // checksum
+                expected_outputs[138] = msb ^ lsb ^ data_checksum; // checksum
                 expected_outputs[139] = 0x47;      // "good read" magic end byte
                 WHEN("The sequence of command bytes is sent to the card") {
                     THEN("The card should respond with the expected read success response") {
