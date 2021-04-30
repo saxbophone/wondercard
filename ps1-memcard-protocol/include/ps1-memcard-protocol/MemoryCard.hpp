@@ -79,9 +79,9 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
-        std::array<std::uint8_t, 8u * 1024u> get_block(std::size_t i);
+        std::span<std::uint8_t, 8u * 1024u> get_block(std::size_t i);
 
-        std::array<std::uint8_t, 128u> get_sector(std::size_t i);
+        std::span<std::uint8_t, 128u> get_sector(std::size_t i);
 
         /**
          * @brief Read-only flag indicating whether the card is powered on or not
