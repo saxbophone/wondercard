@@ -89,7 +89,34 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
     }
 }
 
-// TODO: test case for invalid memory card commands!
+SCENARIO("MemoryCard properly handles invalid memory card commands") {
+    GIVEN("A MemoryCard that is powered on and in memory card command mode") {
+        MemoryCard card;
+        // power up the card
+        REQUIRE(card.power_on());
+        // send "memory card command mode" byte (0x81)
+        std::optional<std::uint8_t> response = std::nullopt;
+        REQUIRE(card.send(0x81, response)); // we need ACK otherwise can't test
+        WHEN("An invalid memory card command byte is sent to the card") {
+            std::uint8_t wrong_command = GENERATE(
+                take(
+                    100,
+                    filter(
+                        [](std::uint8_t c) {
+                            return c != 0x52 and c != 0x53 and c != 0x57;
+                        },
+                        random(0x00, 0xFF)
+                    )
+                )
+            );
+            bool ack = card.send(wrong_command, response);
+            THEN("The card responds with FLAG and NACK") {
+                REQUIRE(response == 0x08);
+                REQUIRE_FALSE(ack);
+            }
+        }
+    }
+}
 
 SCENARIO("Reading Data from Memory Card") {
     GIVEN("A MemoryCard that is initialised with random data and powered on") {
@@ -170,7 +197,6 @@ SCENARIO("Reading Data from Memory Card") {
             }
         }
     }
-    // TODO: tests for MemoryCards that contain non-zero data!
 }
 
 SCENARIO("Writing Data to Memory Card") {
