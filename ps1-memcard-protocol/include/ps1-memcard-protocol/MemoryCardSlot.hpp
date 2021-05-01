@@ -32,6 +32,8 @@ namespace com::saxbophone::ps1_memcard_protocol {
      */
     class MemoryCardSlot {
     public:
+        MemoryCardSlot();
+
         bool send(
             std::optional<std::uint8_t> command,
             std::optional<std::uint8_t>& data
@@ -42,7 +44,7 @@ namespace com::saxbophone::ps1_memcard_protocol {
         bool remove_card();
 
     private:
-        //
+        MemoryCard* _inserted_card;
     };
 }
 

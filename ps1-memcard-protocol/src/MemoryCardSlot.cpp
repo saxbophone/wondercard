@@ -18,6 +18,8 @@
 
 
 namespace com::saxbophone::ps1_memcard_protocol {
+    MemoryCardSlot::MemoryCardSlot() : _inserted_card(nullptr) {}
+
     bool MemoryCardSlot::send(
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
@@ -26,10 +28,26 @@ namespace com::saxbophone::ps1_memcard_protocol {
     }
 
     bool MemoryCardSlot::insert_card(MemoryCard& card) {
-        return {};
+        // guard against card double-insertion
+        if (this->_inserted_card != nullptr) {
+            return false;
+        }
+        // insert the card
+        this->_inserted_card = &card;
+        // power the card on
+        this->_inserted_card->power_on();
+        return true;
     }
 
     bool MemoryCardSlot::remove_card() {
-        return {};
+        // guard against trying to remove non-existent card
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // power down the card
+        this->_inserted_card->power_off();
+        // remove the card
+        this->_inserted_card = nullptr;
+        return true;
     }
 }
