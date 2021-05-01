@@ -55,8 +55,8 @@ SCENARIO("MemoryCard ignores commands sent to it when powered off") {
             std::optional<std::uint8_t> response = std::nullopt;
             bool ack = card.send(command, response);
             THEN("The card does not acknowledge the command or send return data") {
-                CHECK_FALSE(ack);
-                CHECK(response == std::nullopt);
+                REQUIRE_FALSE(ack);
+                REQUIRE(response == std::nullopt);
             }
         }
     }
@@ -81,8 +81,8 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
                 std::optional<std::uint8_t> response = std::nullopt;
                 bool ack = card.send(command, response);
                 THEN("The card does not acknowledge the command or send return data") {
-                    CHECK_FALSE(ack);
-                    CHECK(response == std::nullopt);
+                    REQUIRE_FALSE(ack);
+                    REQUIRE(response == std::nullopt);
                 }
             }
         }
@@ -144,11 +144,11 @@ SCENARIO("Reading Data from Memory Card") {
                             std::optional<std::uint8_t> output = std::nullopt;
                             bool ack = card.send(inputs[i], output);
                             if (i != 9) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -186,11 +186,11 @@ SCENARIO("Reading Data from Memory Card") {
                             std::optional<std::uint8_t> output = std::nullopt;
                             bool ack = card.send(inputs[i], output);
                             if (i != 139) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -242,14 +242,13 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write failure response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            INFO(i);
                             bool ack = card.send(inputs[i], output);
                             if (i != 137) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -293,20 +292,19 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected write success response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            INFO(i);
                             bool ack = card.send(inputs[i], output);
                             if (i != 137) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
-                    }
-                    THEN("The correct card sector should contain the written data") {
-                        auto sec = card.get_sector(sector);
-                        for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
-                            CHECK(sec[i] == data[i]);
+                        AND_THEN("The correct card sector should contain the written data") {
+                            auto sec = card.get_sector(sector);
+                            for (std::size_t i = 0; i < SECTOR_SIZE; i++) {
+                                REQUIRE(sec[i] == data[i]);
+                            }
                         }
                     }
                 }
@@ -351,14 +349,13 @@ SCENARIO("Writing Data to Memory Card") {
                     THEN("The card should respond with the expected bad checksum response") {
                         for (std::size_t i = 0; i < 138; i++) {
                             std::optional<std::uint8_t> output = std::nullopt;
-                            INFO(i);
                             bool ack = card.send(inputs[i], output);
                             if (i != 137) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
                     }
                 }
@@ -386,11 +383,11 @@ SCENARIO("Get Memory Card ID Command") {
                             std::optional<std::uint8_t> output = std::nullopt;
                             bool ack = card.send(inputs[i], output);
                             if (i != 9) { // unless last byte, check card ACK
-                                CHECK(ack);
+                                REQUIRE(ack);
                             } else {
-                                CHECK_FALSE(ack);
+                                REQUIRE_FALSE(ack);
                             }
-                            CHECK(output == expected_outputs[i]);
+                            REQUIRE(output == expected_outputs[i]);
                         }
                     }
                 }
