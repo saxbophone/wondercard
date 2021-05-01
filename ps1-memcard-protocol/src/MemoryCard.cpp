@@ -243,11 +243,19 @@ namespace com::saxbophone::ps1_memcard_protocol {
             }
             break;
         }
-        case MemoryCard::WriteState::SEND_CHECKSUM:
-            // TODO: validate checksum here
+        case MemoryCard::WriteState::SEND_CHECKSUM:{
+            // set to inverted calculated checksum if no value, to force a bad checksum in that case
+            std::uint8_t sent_checksum = command.value_or(~this->_checksum);
+            /*
+             * take checksum sent in command and validate against calculated
+             * checksum
+             * for brevity, store the result of comparison in the checksum
+             */
+            this->_checksum = sent_checksum == this->_checksum ? 0x00 : 0xFF;
             data = 0x00;
             this->_sub_state.write_state = MemoryCard::WriteState::RECV_COMMAND_ACK_1;
             break;
+        }
         case MemoryCard::WriteState::RECV_COMMAND_ACK_1:
             data = 0x5C;
             this->_sub_state.write_state = MemoryCard::WriteState::RECV_COMMAND_ACK_2;
@@ -261,7 +269,13 @@ namespace com::saxbophone::ps1_memcard_protocol {
              * status end byte:
              * 0x47 = Good, 0x4E = Bad Checksum, 0xFF = Bad Sector
              */
-            data = this->_address == 0xFFFF ? 0xFF : 0x47;
+            if (this->_address == 0xFFFF) {       // Bad Sector
+                data = 0xFF;
+            } else if (this->_checksum == 0xFF) { // Bad Checksum
+                data = 0x4E;
+            } else {                              // Good
+                data = 0x47;
+            }
             return false;
         }
         return true;
