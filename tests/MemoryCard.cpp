@@ -312,7 +312,58 @@ SCENARIO("Writing Data to Memory Card") {
                 }
             }
         }
-        // TODO: Bad Checksum test
+        AND_GIVEN("A sequence of command bytes to write a sector with an invalid checksum") {
+            constexpr std::size_t SECTOR_SIZE = 128u;
+            auto data = generate_random_bytes<SECTOR_SIZE>();
+            // calculate data checksum for later use
+            std::uint8_t data_checksum = 0x00;
+            for (auto byte : data) {
+                data_checksum ^= byte;
+            }
+            // sector numbers are 16-bit
+            std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
+            // retrieve MSB and LSB of sector number
+            std::uint8_t msb = sector >> 8;
+            std::uint8_t lsb = (std::uint8_t)(sector & 0x00FF);
+            std::optional<std::uint8_t> inputs[138] = {
+                0x81, 0x57, 0x00, 0x00, msb, lsb,
+                // 128 zero bytes now expected to follow (writing blanks)
+            };
+            // set sector data to write to card
+            for (std::size_t i = 0; i < 128; i++) {
+                inputs[6 + i] = data[i];
+            }
+            // easiest way to corrupt the checksum is to invert it
+            inputs[134] = ~(msb ^ lsb ^ data_checksum);
+            AND_GIVEN("A sqeuence of expected response bytes indicating bad checksum") {
+                std::optional<std::uint8_t> expected_outputs[138] = {
+                    std::nullopt, 0x08, 0x5A, 0x5D, 0x00, 0x00,
+                    // next 128 bytes are 0x00 as data being written (no response)
+                };
+                for (std::size_t i = 6; i < 134; i++) {
+                    expected_outputs[i] = 0x00;
+                }
+                expected_outputs[134] = 0x00; // checksum received
+                expected_outputs[135] = 0x5C; // ACK 1
+                expected_outputs[136] = 0x5D; // ACK 2
+                expected_outputs[137] = 0x4E; // end status = bad checksum!
+                WHEN("The sequence of command bytes is sent to the card") {
+                    THEN("The card should respond with the expected bad checksum response") {
+                        for (std::size_t i = 0; i < 138; i++) {
+                            std::optional<std::uint8_t> output = std::nullopt;
+                            INFO(i);
+                            bool ack = card.send(inputs[i], output);
+                            if (i != 137) { // unless last byte, check card ACK
+                                CHECK(ack);
+                            } else {
+                                CHECK_FALSE(ack);
+                            }
+                            CHECK(output == expected_outputs[i]);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
