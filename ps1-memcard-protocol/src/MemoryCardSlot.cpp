@@ -24,7 +24,12 @@ namespace com::saxbophone::ps1_memcard_protocol {
         std::optional<std::uint8_t> command,
         std::optional<std::uint8_t>& data
     ) {
-        return {};
+        // guard against trying to send to a non-existent card
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // pass on the call to MemoryCard.send()
+        return this->_inserted_card->send(command, data);
     }
 
     bool MemoryCardSlot::insert_card(MemoryCard& card) {
