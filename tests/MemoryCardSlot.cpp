@@ -1,4 +1,5 @@
 #include <optional>
+#include <vector>
 
 #include <cstdint>
 
@@ -46,6 +47,38 @@ SCENARIO("Calling MemoryCardSlot.send() with no MemoryCard inserted") {
             std::uint8_t command = GENERATE(take(100, random(0x00, 0xFF)));
             std::optional<std::uint8_t> result;
             REQUIRE_FALSE(slot.send(command, result));
+        }
+    }
+}
+
+SCENARIO("Calling MemoryCardSlot.send() with a MemoryCard inserted behaves same as MemoryCard.send()") {
+    GIVEN("A MemoryCardSlot with a MemoryCard inserted") {
+        MemoryCardSlot slot;
+        MemoryCard card;
+        slot.insert_card(card);
+        AND_GIVEN("Another identical 'control' MemoryCard that is powered on") {
+            MemoryCard control;
+            REQUIRE(control.power_on());
+            AND_GIVEN("A list of test command sequences") {
+                // array of variable-sized vectors
+                std::vector<std::vector<std::optional<std::uint8_t>>> inputs = {
+                    {0x01,},
+                    {std::nullopt,},
+                    {0x81, 0x53, 0x00,},
+                };
+                std::vector<std::optional<std::uint8_t>> sequence = GENERATE_COPY(from_range(inputs));
+                WHEN("A test command sequence is passed to MemoryCardSlot.send()") {
+                    THEN("The response data and retrn value are the same as those received from the control card") {
+                        for (std::optional<std::uint8_t> command : sequence) {
+                            std::optional<std::uint8_t> response = std::nullopt, control_response = std::nullopt;
+                            bool slot_ack = slot.send(command, response);
+                            bool control_ack = control.send(command, control_response);
+                            REQUIRE(slot_ack == control_ack);
+                            REQUIRE(response == control_response);
+                        }
+                    }
+                }
+            }
         }
     }
 }
