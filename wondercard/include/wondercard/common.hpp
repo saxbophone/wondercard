@@ -27,6 +27,14 @@ namespace com::saxbophone::wondercard {
     typedef std::uint8_t Byte; /**< An 8-bit unsigned byte as used by the protocol code */
     typedef std::optional<Byte> TriState; /**< A Tri-State Byte which uses `std::nullopt` to represent High-Z state */
 
+    /**
+     * @brief User-defined literal for `std::uint8_t` types
+     * @details Such literals can be written as `0x13_u8` and strict compilers
+     * will then not complain of a narrowing type conversion (there are no
+     * `std::uint8_t` literals in the language)
+     * @param literal Literal value
+     * @returns literal's value
+     */
     constexpr std::uint8_t operator "" _u8(unsigned long long literal) {
         return (std::uint8_t)(literal);
     }
