@@ -26,6 +26,10 @@
 namespace com::saxbophone::wondercard {
     typedef std::uint8_t Byte; /**< An 8-bit unsigned byte as used by the protocol code */
     typedef std::optional<Byte> TriState; /**< A Tri-State Byte which uses `std::nullopt` to represent High-Z state */
+
+    constexpr std::uint8_t operator "" _u8(unsigned long long literal) {
+        return (std::uint8_t)(literal);
+    }
 }
 
 #endif // include guard
