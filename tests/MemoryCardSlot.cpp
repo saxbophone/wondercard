@@ -56,7 +56,7 @@ SCENARIO("Calling MemoryCardSlot.send() with no MemoryCard inserted") {
     GIVEN("An empty MemoryCardSlot") {
         MemoryCardSlot slot;
         THEN("Calling send() method of the slot always returns false") {
-            Byte command = GENERATE(take(100, random(0x00, 0xFF)));
+            Byte command = GENERATE(take(100, random(0x00_u8, 0xFF_u8)));
             TriState result;
             REQUIRE_FALSE(slot.send(command, result));
         }
@@ -67,13 +67,13 @@ SCENARIO("Calling MemoryCardSlot.send() with a MemoryCard inserted behaves same 
     GIVEN("A list of test command sequences") {
         // array of variable-sized vectors
         std::vector<std::vector<TriState>> inputs = {
-            {0x01,}, // command for game controller (should be ignored)
+            {0x01_u8,}, // command for game controller (should be ignored)
             {std::nullopt,}, // high-impedance input
-            {0x81,}, // incomplete command for memory card
-            {0x81, 0x33,}, // memory card command mode, invalid memory card command
-            {0x81, 0x52, 0x00, 0x00, 0x01, 0x33, 0x00, 0x00, 0x00, 0x00,}, // read
-            {0x81, 0x57, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00,}, // incomplete write command
-            {0x81, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,}, // get card ID
+            {0x81_u8,}, // incomplete command for memory card
+            {0x81_u8, 0x33_u8,}, // memory card command mode, invalid memory card command
+            {0x81_u8, 0x52_u8, 0x00_u8, 0x00_u8, 0x01_u8, 0x33_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8,}, // read
+            {0x81_u8, 0x57_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x14_u8, 0x00_u8, 0x00_u8,}, // incomplete write command
+            {0x81_u8, 0x53_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8,}, // get card ID
         };
         std::vector<TriState> sequence = GENERATE_COPY(from_range(inputs));
         AND_GIVEN("A MemoryCardSlot with a MemoryCard inserted") {
