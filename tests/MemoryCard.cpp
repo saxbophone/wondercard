@@ -68,12 +68,12 @@ SCENARIO("MemoryCard ignores commands that are not memory card commands") {
         // power up the card
         REQUIRE(card.power_on());
         AND_GIVEN("A command byte that is not 0x81 (memory card command)") {
-            Byte command = GENERATE(
+            Byte command = (Byte)GENERATE(
                 take(
                     100,
                     filter(
-                        [](Byte i) { return i != 0x81_u8; },
-                        random(0x00_u8, 0xFF_u8)
+                        [](std::uint16_t i) { return i != 0x81_u16; },
+                        random(0x00_u16, 0xFF_u16)
                     )
                 )
             );
