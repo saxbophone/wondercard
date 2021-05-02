@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef COM_SAXBOPHONE_PS1_MEMCARD_PROTOCOL_MEMORY_CARD_HPP
-#define COM_SAXBOPHONE_PS1_MEMCARD_PROTOCOL_MEMORY_CARD_HPP
+#ifndef COM_SAXBOPHONE_WONDERCARD_MEMORY_CARD_HPP
+#define COM_SAXBOPHONE_WONDERCARD_MEMORY_CARD_HPP
 
 #include <array>
 #include <optional>
@@ -26,7 +26,7 @@
 #include <cstdint>
 
 
-namespace com::saxbophone::ps1_memcard_protocol {
+namespace com::saxbophone::wondercard {
     /**
      * @brief Represents a virtual PS1 Memory Card
      * @todo Add parametrised constructors!

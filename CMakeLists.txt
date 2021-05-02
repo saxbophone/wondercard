@@ -4,12 +4,12 @@ cmake_minimum_required(VERSION 3.15)
 
 # detect if Project is being used as a sub-project of another CMake project
 if(NOT DEFINED PROJECT_NAME)
-    set(PS1_MEMCARD_PROTOCOL_SUBPROJECT OFF)
+    set(WONDERCARD_SUBPROJECT OFF)
 else()
-    set(PS1_MEMCARD_PROTOCOL_SUBPROJECT ON)
+    set(WONDERCARD_SUBPROJECT ON)
 endif()
 
-project(ps1-memcard-protocol VERSION 0.1.0 LANGUAGES CXX)
+project(wondercard VERSION 0.1.0 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -27,24 +27,24 @@ endif()
 
 # set some handy custom variables to detect Release-type builds from Debug-type ones
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(PS1_MEMCARD_PROTOCOL_BUILD_DEBUG ON)
-    set(PS1_MEMCARD_PROTOCOL_BUILD_RELEASE OFF)
+    set(WONDERCARD_BUILD_DEBUG ON)
+    set(WONDERCARD_BUILD_RELEASE OFF)
 else()
-    set(PS1_MEMCARD_PROTOCOL_BUILD_DEBUG OFF)
-    set(PS1_MEMCARD_PROTOCOL_BUILD_RELEASE ON)
+    set(WONDERCARD_BUILD_DEBUG OFF)
+    set(WONDERCARD_BUILD_RELEASE ON)
 endif()
 
-message(STATUS "[ps1-memcard-protocol] Build Mode: ${CMAKE_BUILD_TYPE}")
+message(STATUS "[wondercard] Build Mode: ${CMAKE_BUILD_TYPE}")
 
 # set the C++ standard to use to C++20 always
-set(PS1_MEMCARD_PROTOCOL_CXX_STANDARD "20")
-message(STATUS "[ps1-memcard-protocol] C++ Standard set to C++${PS1_MEMCARD_PROTOCOL_CXX_STANDARD}")
-set(CMAKE_CXX_STANDARD ${PS1_MEMCARD_PROTOCOL_CXX_STANDARD})
+set(WONDERCARD_CXX_STANDARD "20")
+message(STATUS "[wondercard] C++ Standard set to C++${WONDERCARD_CXX_STANDARD}")
+set(CMAKE_CXX_STANDARD ${WONDERCARD_CXX_STANDARD})
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 # if building in Release mode, provide an option to explicitly enable tests if desired (always ON for other builds, OFF by default for Release builds)
-cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF PS1_MEMCARD_PROTOCOL_BUILD_RELEASE ON)
+cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF WONDERCARD_BUILD_RELEASE ON)
 
 # Premature Optimisation causes problems. Commented out code below allows detection and enabling of LTO.
 # It's not being used currently because it seems to cause linker errors with Clang++ on Ubuntu if the library
@@ -54,37 +54,37 @@ cmake_dependent_option(ENABLE_TESTS "Build the unit tests in release mode?" OFF 
 
 # include(CheckIPOSupported)
 # check_ipo_supported(RESULT IPO_SUPPORTED)
-# # If we're in Release mode, set PS1_MEMCARD_PROTOCOL_USE_IPO to ON by default if it's detected as supported (user can always explicitly enable it in Release mode)
-# cmake_dependent_option(PS1_MEMCARD_PROTOCOL_USE_IPO "Use Link-Time/Inter-Procedural Optimisation?" ${IPO_SUPPORTED} PS1_MEMCARD_PROTOCOL_BUILD_RELEASE OFF)
-# if(PS1_MEMCARD_PROTOCOL_USE_IPO)
-#     message(STATUS "[ps1-memcard-protocol] Link-Time-Optimisation Enabled")
+# # If we're in Release mode, set WONDERCARD_USE_IPO to ON by default if it's detected as supported (user can always explicitly enable it in Release mode)
+# cmake_dependent_option(WONDERCARD_USE_IPO "Use Link-Time/Inter-Procedural Optimisation?" ${IPO_SUPPORTED} WONDERCARD_BUILD_RELEASE OFF)
+# if(WONDERCARD_USE_IPO)
+#     message(STATUS "[wondercard] Link-Time-Optimisation Enabled")
 # endif()
 
 set(
-    PS1_MEMCARD_PROTOCOL_VERSION_STRING
+    WONDERCARD_VERSION_STRING
     "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
 )
-set(PS1_MEMCARD_PROTOCOL_ESCAPED_VERSION_STRING "\"${PS1_MEMCARD_PROTOCOL_VERSION_STRING}\"")
+set(WONDERCARD_ESCAPED_VERSION_STRING "\"${WONDERCARD_VERSION_STRING}\"")
 # end basic metadata
 
 # This is a special target which only exists to capture compilation options
-# used for ps1-memcard-protocol and its tests. This is to avoid setting global compiler
+# used for wondercard and its tests. This is to avoid setting global compiler
 # options which would be inherited by dependencies as well, which is bad
-# because ps1-memcard-protocol uses strict compiler warning options which not all other
-# ps1-memcard-protocols can build successfully with.
+# because wondercard uses strict compiler warning options which not all other
+# wondercards can build successfully with.
 # Any target linked with this one will inherit the compiler options used for
-# ps1-memcard-protocol.
-add_library(ps1-memcard-protocol-compiler-options INTERFACE)
+# wondercard.
+add_library(wondercard-compiler-options INTERFACE)
 
 # used for enabling additional compiler options if supported
 include(CheckCXXCompilerFlag)
 
 function(enable_cxx_compiler_flag_if_supported flag)
-    message(STATUS "[ps1-memcard-protocol] Checking if compiler supports warning flag '${flag}'")
+    message(STATUS "[wondercard] Checking if compiler supports warning flag '${flag}'")
     check_cxx_compiler_flag("${flag}" flag_supported)
     if(flag_supported)
-        message(STATUS "[ps1-memcard-protocol] Enabling warning flag '${flag}'")
-        target_compile_options(ps1-memcard-protocol-compiler-options INTERFACE "${flag}")
+        message(STATUS "[wondercard] Enabling warning flag '${flag}'")
+        target_compile_options(wondercard-compiler-options INTERFACE "${flag}")
     endif()
     unset(flag_supported CACHE)
 endfunction()
@@ -94,7 +94,7 @@ if (MSVC) # MSVC supports different warning options to GCC/Clang
     # add_compile_options(/W4) # set warning level 4
     enable_cxx_compiler_flag_if_supported("/W4")
     # if in debug mode, enable converting all warnings to errors too
-    if (PS1_MEMCARD_PROTOCOL_BUILD_DEBUG)
+    if (WONDERCARD_BUILD_DEBUG)
         # add_compile_options(/WX)
         enable_cxx_compiler_flag_if_supported("/WX")
     endif()
@@ -115,7 +115,7 @@ else() # GCC/Clang warning option
     # enable warnings about mistakes in Doxygen documentation
     enable_cxx_compiler_flag_if_supported("-Wdocumentation")
     # if in debug mode, enable converting all warnings to errors too
-    if (PS1_MEMCARD_PROTOCOL_BUILD_DEBUG)
+    if (WONDERCARD_BUILD_DEBUG)
         enable_cxx_compiler_flag_if_supported("-Werror")
         # exclude the following kinds of warnings from being converted into errors
         # unknown-pragma is useful to have as a warning but not as an error, if you have
@@ -136,10 +136,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 include(CPM)
 
 # library
-add_subdirectory(ps1-memcard-protocol)
+add_subdirectory(wondercard)
 # unit tests --only enable if requested AND we're not building as a sub-project
-if(ENABLE_TESTS AND NOT PS1_MEMCARD_PROTOCOL_SUBPROJECT)
-    message(STATUS "[ps1-memcard-protocol] Unit Tests Enabled")
+if(ENABLE_TESTS AND NOT WONDERCARD_SUBPROJECT)
+    message(STATUS "[wondercard] Unit Tests Enabled")
     add_subdirectory(tests)
     enable_testing()
 endif()

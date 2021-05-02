@@ -1,6 +1,6 @@
 # top-level namespace source files
 target_sources(
-    ps1-memcard-protocol
+    wondercard
         PRIVATE
             MemoryCard.cpp
             MemoryCardSlot.cpp

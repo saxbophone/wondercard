@@ -10,8 +10,8 @@ target_sources(tests PRIVATE main.cpp MemoryCard.cpp MemoryCardSlot.cpp)
 target_link_libraries(
     tests
     PRIVATE
-        ps1-memcard-protocol-compiler-options  # tests use same compiler options as main project
-        ps1-memcard-protocol
+        wondercard-compiler-options  # tests use same compiler options as main project
+        wondercard
         Catch2::Catch2                         # unit testing framework
 )
 

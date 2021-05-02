@@ -14,10 +14,10 @@
 
 #include <cstdint>
 
-#include <ps1-memcard-protocol/MemoryCardSlot.hpp>
+#include <wondercard/MemoryCardSlot.hpp>
 
 
-namespace com::saxbophone::ps1_memcard_protocol {
+namespace com::saxbophone::wondercard {
     MemoryCardSlot::MemoryCardSlot() : _inserted_card(nullptr) {}
 
     bool MemoryCardSlot::send(

@@ -5,10 +5,10 @@
 
 #include <catch2/catch.hpp>
 
-#include <ps1-memcard-protocol/MemoryCard.hpp>
+#include <wondercard/MemoryCard.hpp>
 
 
-using namespace com::saxbophone::ps1_memcard_protocol;
+using namespace com::saxbophone::wondercard;
 
 template<std::size_t SIZE>
 static std::array<std::uint8_t, SIZE> generate_random_bytes() {

@@ -15,17 +15,17 @@
  *
  */
 
-#ifndef COM_SAXBOPHONE_PS1_MEMCARD_PROTOCOL_MEMORY_CARD_SLOT_HPP
-#define COM_SAXBOPHONE_PS1_MEMCARD_PROTOCOL_MEMORY_CARD_SLOT_HPP
+#ifndef COM_SAXBOPHONE_WONDERCARD_MEMORY_CARD_SLOT_HPP
+#define COM_SAXBOPHONE_WONDERCARD_MEMORY_CARD_SLOT_HPP
 
 #include <optional>
 
 #include <cstdint>
 
-#include <ps1-memcard-protocol/MemoryCard.hpp>
+#include <wondercard/MemoryCard.hpp>
 
 
-namespace com::saxbophone::ps1_memcard_protocol {
+namespace com::saxbophone::wondercard {
     /**
      * @brief Represents a virtual PS1 Memory Card
      * @todo Add parametrised constructors!

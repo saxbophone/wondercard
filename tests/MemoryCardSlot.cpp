@@ -5,11 +5,11 @@
 
 #include <catch2/catch.hpp>
 
-#include <ps1-memcard-protocol/MemoryCard.hpp>
-#include <ps1-memcard-protocol/MemoryCardSlot.hpp>
+#include <wondercard/MemoryCard.hpp>
+#include <wondercard/MemoryCardSlot.hpp>
 
 
-using namespace com::saxbophone::ps1_memcard_protocol;
+using namespace com::saxbophone::wondercard;
 
 SCENARIO("MemoryCards can be inserted and removed from MemoryCardSlot") {
     GIVEN("An empty MemoryCardSlot") {

@@ -17,10 +17,10 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <ps1-memcard-protocol/MemoryCard.hpp>
+#include <wondercard/MemoryCard.hpp>
 
 
-namespace com::saxbophone::ps1_memcard_protocol {
+namespace com::saxbophone::wondercard {
     MemoryCard::MemoryCard()
       : powered_on(this->_powered_on)
       , bytes(this->_bytes)
