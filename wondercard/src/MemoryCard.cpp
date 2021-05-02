@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <wondercard/common.hpp>
 #include <wondercard/MemoryCard.hpp>
 
 

@@ -14,6 +14,7 @@
 
 #include <cstdint>
 
+#include <wondercard/common.hpp>
 #include <wondercard/MemoryCardSlot.hpp>
 
 

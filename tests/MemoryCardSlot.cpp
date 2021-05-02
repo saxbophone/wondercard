@@ -5,6 +5,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <wondercard/common.hpp>
 #include <wondercard/MemoryCard.hpp>
 #include <wondercard/MemoryCardSlot.hpp>
 
