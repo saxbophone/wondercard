@@ -37,11 +37,14 @@ namespace com::saxbophone::wondercard {
         if (this->_inserted_card != nullptr) {
             return false;
         }
-        // insert the card
-        this->_inserted_card = &card;
-        // power the card on
-        this->_inserted_card->power_on();
-        return true;
+        // if the card can't be powered on, it can't be inserted
+        if (!card.power_on()) {
+            return false;
+        } else {
+            // insert the card
+            this->_inserted_card = &card;
+            return true;
+        }
     }
 
     bool MemoryCardSlot::remove_card() {
