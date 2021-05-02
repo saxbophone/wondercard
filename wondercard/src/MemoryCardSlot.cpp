@@ -21,8 +21,8 @@ namespace com::saxbophone::wondercard {
     MemoryCardSlot::MemoryCardSlot() : _inserted_card(nullptr) {}
 
     bool MemoryCardSlot::send(
-        std::optional<std::uint8_t> command,
-        std::optional<std::uint8_t>& data
+        TriState command,
+        TriState& data
     ) {
         // guard against trying to send to a non-existent card
         if (this->_inserted_card == nullptr) {

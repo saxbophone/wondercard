@@ -30,7 +30,7 @@ namespace com::saxbophone::wondercard {
       {}
 
     MemoryCard::MemoryCard(
-        std::span<std::uint8_t, MemoryCard::CARD_SIZE> data
+        std::span<Byte, MemoryCard::CARD_SIZE> data
     )
       : MemoryCard()
       {
@@ -55,8 +55,8 @@ namespace com::saxbophone::wondercard {
     }
 
     bool MemoryCard::send(
-        std::optional<std::uint8_t> command,
-        std::optional<std::uint8_t>& data
+        TriState command,
+        TriState& data
     ) {
         // don't do anything, including ACK, if card isn't powered on
         if (!this->powered_on) {
@@ -121,8 +121,8 @@ namespace com::saxbophone::wondercard {
     }
 
     bool MemoryCard::read_data_command(
-        std::optional<std::uint8_t> command,
-        std::optional<std::uint8_t>& data
+        TriState command,
+        TriState& data
     ) {
         switch (this->_sub_state.read_state) {
         // for these two states, command is supposed to be 0x00 but what can we do if it's not?
@@ -142,7 +142,7 @@ namespace com::saxbophone::wondercard {
             break;
         case MemoryCard::ReadState::SEND_ADDRESS_LSB:
             this->_address |= command.value_or(0xFF);
-            this->_checksum ^= (std::uint8_t)(this->_address & 0x00FF);
+            this->_checksum ^= (Byte)(this->_address & 0x00FF);
             // detect invalid sectors (out of bounds)
             if (this->_address > MemoryCard::_LAST_SECTOR) {
                 this->_address = 0xFFFF; // poison value
@@ -160,11 +160,11 @@ namespace com::saxbophone::wondercard {
             this->_sub_state.read_state = MemoryCard::ReadState::RECV_CONFIRM_ADDRESS_MSB;
             break;
         case MemoryCard::ReadState::RECV_CONFIRM_ADDRESS_MSB:
-            data = (std::uint8_t)(this->_address >> 8);
+            data = (Byte)(this->_address >> 8);
             this->_sub_state.read_state = MemoryCard::ReadState::RECV_CONFIRM_ADDRESS_LSB;
             break;
         case MemoryCard::ReadState::RECV_CONFIRM_ADDRESS_LSB:
-            data = (std::uint8_t)(this->_address & 0x00FF);
+            data = (Byte)(this->_address & 0x00FF);
             // we'll only continue if sector address is not a poison value
             if (this->_address == 0xFFFF) {
                 this->_state = MemoryCard::State::IDLE;
@@ -197,8 +197,8 @@ namespace com::saxbophone::wondercard {
     }
 
     bool MemoryCard::write_data_command(
-        std::optional<std::uint8_t> command,
-        std::optional<std::uint8_t>& data
+        TriState command,
+        TriState& data
     ) {
         switch (this->_sub_state.write_state) {
         // for these two states, command is supposed to be 0x00 but what can we do if it's not?
@@ -218,7 +218,7 @@ namespace com::saxbophone::wondercard {
             break;
         case MemoryCard::WriteState::SEND_ADDRESS_LSB:
             this->_address |= command.value_or(0xFF);
-            this->_checksum ^= (std::uint8_t)(this->_address & 0x00FF);
+            this->_checksum ^= (Byte)(this->_address & 0x00FF);
             // detect invalid sectors (out of bounds)
             if (this->_address > MemoryCard::_LAST_SECTOR) {
                 this->_address = 0xFFFF; // poison value
@@ -229,7 +229,7 @@ namespace com::saxbophone::wondercard {
             break;
         case MemoryCard::WriteState::SEND_DATA_SECTOR:{
             // grab byte, converting Z-state to 0xFF if encountered (shouldn't, but...)
-            std::uint8_t write_byte = command.value_or(0xFF);
+            Byte write_byte = command.value_or(0xFF);
             // so long as the sector address is valid, write the sector
             if (this->_address != 0xFFFF) {
                 this->get_sector(this->_address)[this->_byte_counter] = write_byte;
@@ -245,7 +245,7 @@ namespace com::saxbophone::wondercard {
         }
         case MemoryCard::WriteState::SEND_CHECKSUM:{
             // set to inverted calculated checksum if no value, to force a bad checksum in that case
-            std::uint8_t sent_checksum = command.value_or(~this->_checksum);
+            Byte sent_checksum = command.value_or(~this->_checksum);
             /*
              * take checksum sent in command and validate against calculated
              * checksum
@@ -282,8 +282,8 @@ namespace com::saxbophone::wondercard {
     }
 
     bool MemoryCard::get_memcard_id_command(
-        std::optional<std::uint8_t>,
-        std::optional<std::uint8_t>& data
+        TriState,
+        TriState& data
     ) {
         // XXX: This function is hell please refactor it
         switch (this->_sub_state.get_id_state) {
@@ -325,7 +325,7 @@ namespace com::saxbophone::wondercard {
         return true;
     }
 
-    const std::uint8_t MemoryCard::_FLAG_INIT_VALUE = 0x08;
+    const Byte MemoryCard::_FLAG_INIT_VALUE = 0x08;
     const MemoryCard::State MemoryCard::_STARTING_STATE = MemoryCard::State::IDLE;
     const std::uint16_t MemoryCard::_LAST_SECTOR = 0x03FF;
 }

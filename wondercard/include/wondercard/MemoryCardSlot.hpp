@@ -22,13 +22,14 @@
 
 #include <cstdint>
 
+#include <wondercard/common.hpp>
 #include <wondercard/MemoryCard.hpp>
 
 
 namespace com::saxbophone::wondercard {
     /**
-     * @brief Represents a virtual PS1 Memory Card
-     * @todo Add parametrised constructors!
+     * @brief A MemoryCardSlot is a device which a MemoryCard can be inserted
+     * into and read/written from.
      */
     class MemoryCardSlot {
     public:
@@ -42,8 +43,8 @@ namespace com::saxbophone::wondercard {
          * @param[out] data Destination to write response data to
          */
         bool send(
-            std::optional<std::uint8_t> command,
-            std::optional<std::uint8_t>& data
+            TriState command,
+            TriState& data
         );
 
         /**

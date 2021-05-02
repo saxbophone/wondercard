@@ -25,11 +25,12 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <wondercard/common.hpp>
+
 
 namespace com::saxbophone::wondercard {
     /**
      * @brief Represents a virtual PS1 Memory Card
-     * @todo Add parametrised constructors!
      */
     class MemoryCard {
     public:
@@ -42,12 +43,12 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief A non-owning view of an entire save Block on the MemoryCard
          */
-        typedef std::span<std::uint8_t, BLOCK_SIZE> Block;
+        typedef std::span<Byte, BLOCK_SIZE> Block;
 
         /**
          * @brief A non-owning view of a Sector on the MemoryCard
          */
-        typedef std::span<std::uint8_t, SECTOR_SIZE> Sector;
+        typedef std::span<Byte, SECTOR_SIZE> Sector;
 
         /**
          * @brief Initialises card data to all zeroes
@@ -59,7 +60,7 @@ namespace com::saxbophone::wondercard {
          * @brief Populates card data with that of the supplied span
          * @param data The data to initialise the card data with
          */
-        MemoryCard(std::span<std::uint8_t, MemoryCard::CARD_SIZE> data);
+        MemoryCard(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Simulates powering up the card, e.g. when inserted into slot
@@ -91,8 +92,8 @@ namespace com::saxbophone::wondercard {
          * @returns `false` if we time out waiting for an ACK from the card
          */
         bool send(
-            std::optional<std::uint8_t> command,
-            std::optional<std::uint8_t>& data
+            TriState command,
+            TriState& data
         );
 
         /**
@@ -117,7 +118,7 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief writable accessor for the MemoryCard data bytes
          */
-        std::span<std::uint8_t, CARD_SIZE> bytes;
+        std::span<Byte, CARD_SIZE> bytes;
 
     private:
         enum class State {
@@ -172,33 +173,33 @@ namespace com::saxbophone::wondercard {
         };
 
         bool read_data_command(
-            std::optional<std::uint8_t> command,
-            std::optional<std::uint8_t>& data
+            TriState command,
+            TriState& data
         );
 
         bool write_data_command(
-            std::optional<std::uint8_t> command,
-            std::optional<std::uint8_t>& data
+            TriState command,
+            TriState& data
         );
 
         bool get_memcard_id_command(
-            std::optional<std::uint8_t> command,
-            std::optional<std::uint8_t>& data
+            TriState command,
+            TriState& data
         );
 
-        const static std::uint8_t _FLAG_INIT_VALUE;
+        const static Byte _FLAG_INIT_VALUE;
         const static State _STARTING_STATE;
         const static std::uint16_t _LAST_SECTOR;
 
         bool _powered_on;
-        std::uint8_t _flag;  // special FLAG value, a kind of status register on card
+        Byte _flag;  // special FLAG value, a kind of status register on card
         State _state;        // state machine state
         SubState _sub_state; // sub-machine state
         std::uint16_t _address; // sector of address to read/write
         std::uint8_t _byte_counter; // index for tracking how many bytes read/written
-        std::uint8_t _checksum; // scratchpad value for calculating checksums
+        Byte _checksum; // scratchpad value for calculating checksums
         // raw card data bytes
-        std::array<std::uint8_t, CARD_SIZE> _bytes;
+        std::array<Byte, CARD_SIZE> _bytes;
     };
 }
 
