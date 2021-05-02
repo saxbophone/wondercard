@@ -51,7 +51,7 @@ namespace com::saxbophone::wondercard {
 
     bool MemoryCard::power_off() {
         // set powered_on to false if not already and return true, else false
-        return !this->powered_on ? false : !(this->_powered_on = false);
+        return std::exchange(this->_powered_on, false);
     }
 
     bool MemoryCard::send(
