@@ -98,14 +98,14 @@ SCENARIO("MemoryCard properly handles invalid memory card commands") {
         TriState response = std::nullopt;
         REQUIRE(card.send(0x81_u8, response)); // we need ACK otherwise can't test
         WHEN("An invalid memory card command byte is sent to the card") {
-            Byte wrong_command = GENERATE(
+            Byte wrong_command = (Byte)GENERATE(
                 take(
                     100,
                     filter(
-                        [](Byte c) {
-                            return c != 0x52_u8 and c != 0x53_u8 and c != 0x57_u8;
+                        [](std::uint16_t c) {
+                            return c != 0x52_u16 and c != 0x53_u16 and c != 0x57_u16;
                         },
-                        random(0x00_u8, 0xFF_u8)
+                        random(0x00_u16, 0xFF_u16)
                     )
                 )
             );

@@ -56,7 +56,7 @@ SCENARIO("Calling MemoryCardSlot.send() with no MemoryCard inserted") {
     GIVEN("An empty MemoryCardSlot") {
         MemoryCardSlot slot;
         THEN("Calling send() method of the slot always returns false") {
-            Byte command = GENERATE(take(100, random(0x00_u8, 0xFF_u8)));
+            Byte command = (Byte)GENERATE(take(100, random(0x00_u16, 0xFF_u16)));
             TriState result;
             REQUIRE_FALSE(slot.send(command, result));
         }
