@@ -19,7 +19,9 @@
 #define COM_SAXBOPHONE_WONDERCARD_MEMORY_CARD_SLOT_HPP
 
 #include <optional>
+#include <span>
 
+#include <cstddef>
 #include <cstdint>
 
 #include <wondercard/common.hpp>
@@ -61,6 +63,54 @@ namespace com::saxbophone::wondercard {
          * @returns `false` when there was no card in the slot to remove
          */
         bool remove_card();
+
+        /**
+         * @brief Reads the entire contents of the inserted card
+         * @returns Card data contents as array of bytes
+         * @warning Not Implemented
+         */
+        std::array<Byte, MemoryCard::CARD_SIZE> read_card();
+
+        /**
+         * @brief Writes data from the given span to the entire card
+         * @param data Data to write to the card
+         * @warning Not Implemented
+         */
+        void write_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
+        /**
+         * @brief Reads the specified block of the inserted card
+         * @returns Block data contents as array of bytes
+         * @param index Block to read from
+         * @warning Not Implemented
+         */
+        std::array<Byte, MemoryCard::BLOCK_SIZE> read_block(std::size_t index);
+
+        /**
+         * @brief Writes data from the given span to the specified block of the
+         * inserted card.
+         * @param index Block to write to
+         * @param data Data to write to the block
+         * @warning Not Implemented
+         */
+        void write_block(std::size_t index, MemoryCard::Block data);
+
+        /**
+         * @brief Reads the specified sector of the inserted card
+         * @returns Sector data contents as array of bytes
+         * @param index Sector to read from
+         * @warning Not Implemented
+         */
+        std::array<Byte, MemoryCard::SECTOR_SIZE> read_sector(std::size_t index);
+
+        /**
+         * @brief Writes data from the given span to the specified sector of
+         * the inserted card.
+         * @param index Sector to write to
+         * @param data Data to write to the sector
+         * @warning Not Implemented
+         */
+        void write_sector(std::size_t index, MemoryCard::Sector data);
 
     private:
         MemoryCard* _inserted_card;
