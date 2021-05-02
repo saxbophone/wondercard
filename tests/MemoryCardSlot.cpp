@@ -38,6 +38,18 @@ SCENARIO("MemoryCards can be inserted and removed from MemoryCardSlot") {
             }
         }
     }
+    GIVEN("Two empty MemoryCardSlots") {
+        MemoryCardSlot slots[2];
+        AND_GIVEN("A MemoryCard") {
+            MemoryCard card;
+            AND_GIVEN("The MemoryCard is inserted into the first slot") {
+                REQUIRE(slots[0].insert_card(card));
+                THEN("Attempting to insert the same card into the second slot fails") {
+                    CHECK_FALSE(slots[1].insert_card(card));
+                }
+            }
+        }
+    }
 }
 
 SCENARIO("Calling MemoryCardSlot.send() with no MemoryCard inserted") {
