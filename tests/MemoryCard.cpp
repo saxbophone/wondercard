@@ -127,7 +127,7 @@ SCENARIO("Reading Data from Memory Card") {
         REQUIRE(card.power_on());
         AND_GIVEN("A sequence of command bytes to read an invalid sector") {
             // sector numbers are 16-bit
-            std::uint16_t sector = GENERATE(take(100, random(0x0400, 0xFFFF)));
+            std::uint16_t sector = GENERATE(take(100, random(0x0400_u16, 0xFFFF_u16)));
             // retrieve MSB and LSB of sector number
             Byte msb = sector >> 8;
             Byte lsb = (Byte)(sector & 0x00FF);
@@ -156,7 +156,7 @@ SCENARIO("Reading Data from Memory Card") {
         }
         AND_GIVEN("A sequence of command bytes to read a valid sector") {
             // sector numbers are 16-bit
-            std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
+            std::uint16_t sector = GENERATE(take(100, random(0x0000_u16, 0x03FF_u16)));
             // retrieve MSB and LSB of sector number
             Byte msb = sector >> 8;
             Byte lsb = (Byte)(sector & 0x00FF);
@@ -213,7 +213,7 @@ SCENARIO("Writing Data to Memory Card") {
                 data_checksum ^= byte;
             }
             // sector numbers are 16-bit
-            std::uint16_t sector = GENERATE(take(100, random(0x0400, 0xFFFF)));
+            std::uint16_t sector = GENERATE(take(100, random(0x0400_u16, 0xFFFF_u16)));
             // retrieve MSB and LSB of sector number
             Byte msb = sector >> 8;
             Byte lsb = (Byte)(sector & 0x00FF);
@@ -263,7 +263,7 @@ SCENARIO("Writing Data to Memory Card") {
                 data_checksum ^= byte;
             }
             // sector numbers are 16-bit
-            std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
+            std::uint16_t sector = GENERATE(take(100, random(0x0000_u16, 0x03FF_u16)));
             // retrieve MSB and LSB of sector number
             Byte msb = sector >> 8;
             Byte lsb = (Byte)(sector & 0x00FF);
@@ -319,7 +319,7 @@ SCENARIO("Writing Data to Memory Card") {
                 data_checksum ^= byte;
             }
             // sector numbers are 16-bit
-            std::uint16_t sector = GENERATE(take(100, random(0x0000, 0x03FF)));
+            std::uint16_t sector = GENERATE(take(100, random(0x0000_u16, 0x03FF_u16)));
             // retrieve MSB and LSB of sector number
             Byte msb = sector >> 8;
             Byte lsb = (Byte)(sector & 0x00FF);
@@ -438,7 +438,7 @@ SCENARIO("Populate Memory Card data") {
                 Byte,
                 BLOCK_SIZE
             > data = generate_random_bytes<BLOCK_SIZE>();
-            Byte b = GENERATE(range(0, 16));
+            Byte b = GENERATE(range(0_u8, 16_u8));
             WHEN("The data is copied to a specific Block") {
                 std::copy(data.begin(), data.end(), card.get_block(b).begin());
                 THEN("The correct range of MemoryCard data is written to") {
@@ -454,7 +454,7 @@ SCENARIO("Populate Memory Card data") {
                 Byte,
                 SECTOR_SIZE
             > data = generate_random_bytes<SECTOR_SIZE>();
-            Byte s = GENERATE(take(100, random(0, 1024)));
+            std::uint16_t s = GENERATE(take(100, random(0_u16, 1024_u16)));
             WHEN("The data is copied to a specific Sector") {
                 std::copy(data.begin(), data.end(), card.get_sector(s).begin());
                 THEN("The correct range of MemoryCard data is written to") {

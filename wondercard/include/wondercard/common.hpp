@@ -38,6 +38,19 @@ namespace com::saxbophone::wondercard {
     constexpr std::uint8_t operator "" _u8(unsigned long long literal) {
         return (std::uint8_t)(literal);
     }
+
+
+    /**
+     * @brief User-defined literal for `std::uint16_t` types
+     * @details Such literals can be written as `0x13FF_u16` and strict
+     * compilers will then not complain of a narrowing type conversion (there
+     * are no `std::uint16_t` literals in the language)
+     * @param literal Literal value
+     * @returns literal's value
+     */
+    constexpr std::uint16_t operator "" _u16(unsigned long long literal) {
+        return (std::uint16_t)(literal);
+    }
 }
 
 #endif // include guard
