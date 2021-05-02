@@ -33,23 +33,33 @@ namespace com::saxbophone::ps1_memcard_protocol {
      */
     class MemoryCard {
     public:
-        static constexpr std::size_t CARD_BLOCK_COUNT = 16u;
-        static constexpr std::size_t BLOCK_SECTOR_COUNT = 64u;
-        static constexpr std::size_t SECTOR_SIZE = 128u; // 128 bytes
-        static constexpr std::size_t BLOCK_SIZE = BLOCK_SECTOR_COUNT * SECTOR_SIZE;
-        static constexpr std::size_t CARD_SIZE = CARD_BLOCK_COUNT * BLOCK_SIZE;
+        static constexpr std::size_t CARD_BLOCK_COUNT = 16u; /**< Number of Blocks on the card */
+        static constexpr std::size_t BLOCK_SECTOR_COUNT = 64u; /**< Number of Sectors in a Block */
+        static constexpr std::size_t SECTOR_SIZE = 128u; /**< Number of bytes in a Sector */
+        static constexpr std::size_t BLOCK_SIZE = BLOCK_SECTOR_COUNT * SECTOR_SIZE; /**< Number of bytes in a Block */
+        static constexpr std::size_t CARD_SIZE = CARD_BLOCK_COUNT * BLOCK_SIZE; /**< Number of bytes in a MemoryCard */
 
+        /**
+         * @brief A non-owning view of an entire save Block on the MemoryCard
+         */
         typedef std::span<std::uint8_t, BLOCK_SIZE> Block;
+
+        /**
+         * @brief A non-owning view of a Sector on the MemoryCard
+         */
         typedef std::span<std::uint8_t, SECTOR_SIZE> Sector;
 
         /**
-         * @brief Default constructor
-         * @details Initialises card data to all zeroes
+         * @brief Initialises card data to all zeroes
          * @warning Default card data may change in future versions of the software
          */
         MemoryCard();
 
-        MemoryCard(std::span<std::uint8_t, CARD_SIZE> data);
+        /**
+         * @brief Populates card data with that of the supplied span
+         * @param data The data to initialise the card data with
+         */
+        MemoryCard(std::span<std::uint8_t, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Simulates powering up the card, e.g. when inserted into slot
@@ -85,15 +95,28 @@ namespace com::saxbophone::ps1_memcard_protocol {
             std::optional<std::uint8_t>& data
         );
 
-        Block get_block(std::size_t i);
+        /**
+         * @returns The Block on this MemoryCard with the given index
+         * @param index The index of the Block to retrieve (`{0..15}`)
+         * @warning `index` is not currently validated
+         */
+        Block get_block(std::size_t index);
 
-        Sector get_sector(std::size_t i);
+        /**
+         * @returns The Sector on this MemoryCard with the given index
+         * @param index The index of the Sector to retrieve (`{0..1023}`)
+         * @warning `index` is not currently validated
+         */
+        Sector get_sector(std::size_t index);
 
         /**
          * @brief Read-only flag indicating whether the card is powered on or not
          */
         const bool& powered_on;
 
+        /**
+         * @brief writable accessor for the MemoryCard data bytes
+         */
         std::span<std::uint8_t, CARD_SIZE> bytes;
 
     private:

@@ -34,13 +34,31 @@ namespace com::saxbophone::ps1_memcard_protocol {
     public:
         MemoryCardSlot();
 
+        /**
+         * @brief Sends the given command byte to the inserted MemoryCard
+         * @returns `false` when there is no MemoryCard inserted
+         * @returns Response value from inserted MemoryCard when one is inserted
+         * @param command Command byte to send (pass `std::nullopt` for High-Z)
+         * @param[out] data Destination to write response data to
+         */
         bool send(
             std::optional<std::uint8_t> command,
             std::optional<std::uint8_t>& data
         );
 
+        /**
+         * @brief Attempts to insert the given MemoryCard into this MemoryCardSlot
+         * @returns `true` when card inserted successfully
+         * @returns `false` when another card is already inserted
+         * @param card MemoryCard to attempt to insert
+         */
         bool insert_card(MemoryCard& card);
 
+        /**
+         * @brief Attempts to remove a MemoryCard from this MemoryCardSlot
+         * @returns `true` when a card was removed successfully
+         * @returns `false` when there was no card in the slot to remove
+         */
         bool remove_card();
 
     private:
