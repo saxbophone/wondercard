@@ -9,8 +9,11 @@
 #include <wondercard/MemoryCard.hpp>
 #include <wondercard/MemoryCardSlot.hpp>
 
+#include "test_helpers.hpp"
+
 
 using namespace com::saxbophone::wondercard;
+using namespace com::saxbophone::wondercard::PRIVATE::test_helpers;
 
 SCENARIO("MemoryCards can be inserted and removed from MemoryCardSlot") {
     GIVEN("An empty MemoryCardSlot") {

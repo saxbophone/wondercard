@@ -8,20 +8,11 @@
 #include <wondercard/common.hpp>
 #include <wondercard/MemoryCard.hpp>
 
+#include "test_helpers.hpp"
+
 
 using namespace com::saxbophone::wondercard;
-
-template<std::size_t SIZE>
-static std::array<Byte, SIZE> generate_random_bytes() {
-    std::array<Byte, SIZE> data;
-    std::default_random_engine engine;
-    // N.B: Can't use uint8_t for type as generator doesn't support char types
-    std::uniform_int_distribution<std::uint16_t> prng(0x0000, 0x00FF);
-    for (auto& d : data) {
-        d = (Byte)prng(engine);
-    }
-    return data;
-}
+using namespace com::saxbophone::wondercard::PRIVATE::test_helpers;
 
 SCENARIO("MemoryCard can be powered on when off and off when on") {
     GIVEN("A MemoryCard that is powered off") {
