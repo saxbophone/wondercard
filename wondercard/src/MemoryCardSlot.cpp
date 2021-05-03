@@ -10,6 +10,7 @@
  *
  */
 
+#include <array>
 #include <optional>
 
 #include <cstdint>
@@ -58,5 +59,9 @@ namespace com::saxbophone::wondercard {
         // remove the card
         this->_inserted_card = nullptr;
         return true;
+    }
+
+    std::array<Byte, MemoryCard::CARD_SIZE> MemoryCardSlot::read_card() {
+        return {};
     }
 }

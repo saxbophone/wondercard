@@ -112,15 +112,19 @@ SCENARIO("Using higher level I/O API to read entire MemoryCard") {
         > data = generate_random_bytes<MemoryCard::CARD_SIZE>();
         AND_GIVEN("A MemoryCard initialised with that data") {
             MemoryCard card(data);
+            auto bytes = card.bytes;
             // verify card data is correct --test is invalid if not
             for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
-                REQUIRE(card.bytes[i] == data[i]);
+                REQUIRE(bytes[i] == data[i]);
             }
             AND_GIVEN("A MemoryCardSlot that the card is successfully inserted into") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 THEN("Calling MemoryCardSlot.read_card() returns an array identical to the data") {
-                    REQUIRE(slot.read_card() == data);
+                    auto card_data = slot.read_card();
+                    for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
+                        REQUIRE(card_data[i] == data[i]);
+                    }
                 }
             }
         }
