@@ -1,3 +1,4 @@
+#include <array>
 #include <optional>
 #include <vector>
 
@@ -97,6 +98,29 @@ SCENARIO("Calling MemoryCardSlot.send() with a MemoryCard inserted behaves same 
                             REQUIRE(response == control_response);
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Using higher level I/O API to read entire MemoryCard") {
+    GIVEN("An entire MemoryCard's-worth of data") {
+        std::array<
+            Byte,
+            MemoryCard::CARD_SIZE
+        > data = generate_random_bytes<MemoryCard::CARD_SIZE>();
+        AND_GIVEN("A MemoryCard initialised with that data") {
+            MemoryCard card(data);
+            // verify card data is correct --test is invalid if not
+            for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
+                REQUIRE(card.bytes[i] == data[i]);
+            }
+            AND_GIVEN("A MemoryCardSlot that the card is successfully inserted into") {
+                MemoryCardSlot slot;
+                REQUIRE(slot.insert_card(card));
+                THEN("Calling MemoryCardSlot.read_card() returns an array identical to the data") {
+                    REQUIRE(slot.read_card() == data);
                 }
             }
         }
