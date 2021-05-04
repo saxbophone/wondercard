@@ -1,0 +1,12 @@
+name: build-docs
+
+on: push
+  # release:
+  #   types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Build Doxygen Docs
+        uses: mattnotmitt/doxygen-action@v1.3.1
