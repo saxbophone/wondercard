@@ -64,4 +64,8 @@ namespace com::saxbophone::wondercard {
     std::array<Byte, MemoryCard::CARD_SIZE> MemoryCardSlot::read_card() {
         return {};
     }
+
+    void MemoryCardSlot::write_card(std::span<Byte, MemoryCard::CARD_SIZE> data) {
+        return;
+    }
 }

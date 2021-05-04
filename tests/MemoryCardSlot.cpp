@@ -130,3 +130,28 @@ SCENARIO("Using higher level I/O API to read entire MemoryCard") {
         }
     }
 }
+
+SCENARIO("Using higher level I/O API to write entire MemoryCard") {
+    GIVEN("An entire MemoryCard's-worth of data") {
+        std::array<
+            Byte,
+            MemoryCard::CARD_SIZE
+        > data = generate_random_bytes<MemoryCard::CARD_SIZE>();
+        AND_GIVEN("An empty MemoryCard") {
+            MemoryCard card;
+            AND_GIVEN("A MemoryCardSlot that the card is successfully inserted into") {
+                MemoryCardSlot slot;
+                REQUIRE(slot.insert_card(card));
+                WHEN("MemoryCardSlot.write_card() is called with the data") {
+                    slot.write_card(data);
+                    THEN("The card data bytes should equal those of the data") {
+                        auto bytes = card.bytes;
+                        for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
+                            REQUIRE(bytes[i] == data[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
