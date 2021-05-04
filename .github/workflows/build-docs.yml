@@ -5,9 +5,14 @@ on: push
   #   types: [published]
 
 jobs:
-  build:
+  build-docs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Build Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1.3.1
+      - name: Deploy Docs to github-pages
+        uses: JamesIves/github-pages-deploy-action@4.1.1
+        with:
+          branch: gh-pages
+          folder: html
