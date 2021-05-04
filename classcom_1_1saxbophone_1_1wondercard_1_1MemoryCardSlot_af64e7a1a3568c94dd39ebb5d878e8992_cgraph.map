@@ -1,0 +1,4 @@
+<map id="com::saxbophone::wondercard::MemoryCardSlot::insert_card" name="com::saxbophone::wondercard::MemoryCardSlot::insert_card">
+<area shape="rect" id="node1" title="Attempts to insert the given MemoryCard into this MemoryCardSlot." alt="" coords="5,5,200,47"/>
+<area shape="rect" id="node2" href="$classcom_1_1saxbophone_1_1wondercard_1_1MemoryCard.html#a420d7d8c0f3322866393638c6890c5f9" title="Simulates powering up the card, e.g. when inserted into slot." alt="" coords="248,5,443,47"/>
+</map>
