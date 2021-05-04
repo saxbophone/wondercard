@@ -8,5 +8,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/checkout@v2
       - name: Build Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1.3.1
