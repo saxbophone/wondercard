@@ -79,7 +79,7 @@ jobs:
         # make docs folder, move docs there, call script to generate HTML redirect in index
         run: |
           mkdir docs
-          mv html docs/$DOCS_VERSION
+          cp -R html docs/$DOCS_VERSION
           ./generate_index $DOCS_VERSION
       - name: Deploy Docs to github-pages
         uses: JamesIves/github-pages-deploy-action@4.1.1
