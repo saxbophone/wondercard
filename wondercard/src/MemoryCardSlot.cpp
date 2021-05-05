@@ -131,7 +131,7 @@ namespace com::saxbophone::wondercard {
         }
         // end byte should always be 0x47 and never ACK
         bool end_ack = this->_inserted_card->send(0x00, output);
-        return end_ack == false and output == 0x47;
+        return end_ack == false and output == 0x47 and card_checksum == checksum;
     }
 
     void MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
