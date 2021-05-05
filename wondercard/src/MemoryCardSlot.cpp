@@ -159,11 +159,11 @@ namespace com::saxbophone::wondercard {
         // base case
         if constexpr (sector_index == (MemoryCard::BLOCK_SECTOR_COUNT - 1)) {
             // last sector
-            return this->read_sector(sector_index, sector);
+            return this->read_sector(block_sector + sector_index, sector);
         } else {
             // this and next sector (recursive template call)
             return
-                this->read_sector(sector_index, sector) and
+                this->read_sector(block_sector + sector_index, sector) and
                 this->_read_block_sector<sector_index + 1>(block_sector, data);
         }
     }
