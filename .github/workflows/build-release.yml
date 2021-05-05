@@ -75,6 +75,7 @@ jobs:
         uses: mattnotmitt/doxygen-action@v1.3.1
       - name: Set up latest docs auto-linking
         shell: bash
+        working-directory: ${{github.workspace}}
         # make docs folder, move docs there, call script to generate HTML redirect in index
         run: |
           mkdir docs
@@ -84,6 +85,6 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@4.1.1
         with:
           branch: gh-pages
-          folder: html
+          folder: docs
           target-folder: ${{env.DOCS_VERSION}}
           clean: false
