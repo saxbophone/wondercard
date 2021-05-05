@@ -70,3 +70,5 @@ jobs:
         with:
           branch: gh-pages
           folder: html
+          target-folder: ${{github.ref}}
+          clean: false
