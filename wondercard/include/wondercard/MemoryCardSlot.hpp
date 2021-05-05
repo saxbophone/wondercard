@@ -80,11 +80,14 @@ namespace com::saxbophone::wondercard {
 
         /**
          * @brief Reads the specified block of the inserted card
-         * @returns Block data contents as array of bytes
+         * @returns false if failed to read data
+         * @returns true if succeeded to read data
          * @param index Block to read from
-         * @warning Not Implemented
+         * @param[out] data Span to write read data to
+         * @todo Change return type to an enum or introduce exception throwing
+         * so the variety of causes of failure can be determined by the caller.
          */
-        std::array<Byte, MemoryCard::BLOCK_SIZE> read_block(std::size_t index);
+        bool read_block(std::size_t index, MemoryCard::Block data);
 
         /**
          * @brief Writes data from the given span to the specified block of the
@@ -101,8 +104,10 @@ namespace com::saxbophone::wondercard {
          * @returns true if succeeded to read data
          * @param index Sector to read from
          * @param[out] data Span to write read data to
+         * @todo Change return type to an enum or introduce exception throwing
+         * so the variety of causes of failure can be determined by the caller.
          */
-        bool read_sector(std::size_t index, std::span<Byte, MemoryCard::SECTOR_SIZE> data);
+        bool read_sector(std::size_t index, MemoryCard::Sector data);
 
         /**
          * @brief Writes data from the given span to the specified sector of
@@ -114,6 +119,9 @@ namespace com::saxbophone::wondercard {
         void write_sector(std::size_t index, MemoryCard::Sector data);
 
     private:
+        template <std::size_t sector_index>
+        bool _read_block_sector(std::size_t block_sector, MemoryCard::Block data);
+
         MemoryCard* _inserted_card;
     };
 }

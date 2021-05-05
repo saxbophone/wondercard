@@ -69,19 +69,28 @@ namespace com::saxbophone::wondercard {
         return;
     }
 
-    std::array<Byte, MemoryCard::BLOCK_SIZE> MemoryCardSlot::read_block(std::size_t index) {
-        return {};
+    bool MemoryCardSlot::read_block(std::size_t index, MemoryCard::Block data) {
+        // guard against reading when no card in slot
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // TODO: Validate index???
+        // calculate first sector of block (just shift block number by number of bits of sectors)
+        std::size_t block_sector = index << 6;
+        // retrieve each sector of the block using template recursion
+        return this->_read_block_sector<0>(block_sector, data);
     }
 
     void MemoryCardSlot::write_block(std::size_t index, MemoryCard::Block data) {
         return;
     }
 
-    bool MemoryCardSlot::read_sector(std::size_t index, std::span<Byte, MemoryCard::SECTOR_SIZE> data) {
+    bool MemoryCardSlot::read_sector(std::size_t index, MemoryCard::Sector data) {
         // guard against reading when no card in slot
         if (this->_inserted_card == nullptr) {
             return false;
         }
+        // TODO: Validate index???
         // scratchpad variable for card responses
         TriState output = std::nullopt;
         // get MSB and LSB of sector index
@@ -136,5 +145,21 @@ namespace com::saxbophone::wondercard {
 
     void MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
         return;
+    }
+
+    template <std::size_t sector_index>
+    bool MemoryCardSlot::_read_block_sector(std::size_t block_sector, MemoryCard::Block data) {
+        // use subspan to write sector data to output
+        MemoryCard::Sector sector = data.subspan<sector_index * MemoryCard::SECTOR_SIZE, MemoryCard::SECTOR_SIZE>();
+        // base case
+        if constexpr (sector_index == (MemoryCard::BLOCK_SECTOR_COUNT - 1)) {
+            // last sector
+            return this->read_sector(sector_index, sector);
+        } else {
+            // this and next sector (recursive template call)
+            return
+                this->read_sector(sector_index, sector) and
+                this->_read_block_sector<sector_index + 1>(block_sector, data);
+        }
     }
 }

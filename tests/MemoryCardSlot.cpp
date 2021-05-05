@@ -174,7 +174,11 @@ SCENARIO("Using higher level I/O API to read a MemoryCard Block") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 WHEN("MemoryCardSlot.read_block() is called with the block number") {
-                    auto block_data = slot.read_block(block_number);
+                    std::array<
+                        Byte,
+                        MemoryCard::BLOCK_SIZE
+                    > block_data;
+                    REQUIRE(slot.read_block(block_number, block_data));
                     THEN("The returned data is equal to the generated data") {
                         for (std::size_t i = 0; i < MemoryCard::BLOCK_SIZE; i++) {
                             REQUIRE(block_data[i] == data[i]);
