@@ -1,0 +1,4 @@
+<map id="com::saxbophone::wondercard::MemoryCardSlot::remove_card" name="com::saxbophone::wondercard::MemoryCardSlot::remove_card">
+<area shape="rect" id="node1" title="Attempts to remove a MemoryCard from this MemoryCardSlot." alt="" coords="5,5,211,47"/>
+<area shape="rect" id="node2" href="$classcom_1_1saxbophone_1_1wondercard_1_1MemoryCard.html#a2723aa5390c1248021e8ed8999098c5e" title="Simulates powering down the card, e.g. when removed from slot." alt="" coords="259,5,453,47"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="com::saxbophone::wondercard::MemoryCard" name="com::saxbophone::wondercard::MemoryCard">
+<area shape="rect" id="node1" title="Represents a virtual PS1 Memory Card." alt="" coords="5,109,200,151"/>
+<area shape="rect" id="node2" title=" " alt="" coords="25,5,180,47"/>
+</map>
