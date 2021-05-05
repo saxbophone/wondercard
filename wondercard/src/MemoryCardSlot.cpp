@@ -61,8 +61,13 @@ namespace com::saxbophone::wondercard {
         return true;
     }
 
-    std::array<Byte, MemoryCard::CARD_SIZE> MemoryCardSlot::read_card() {
-        return {};
+    bool MemoryCardSlot::read_card(std::span<Byte, MemoryCard::CARD_SIZE> data) {
+        // guard against reading when no card in slot
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // retrieve each block of the card using template recursion
+        return this->_read_card_block<0>(data);
     }
 
     void MemoryCardSlot::write_card(std::span<Byte, MemoryCard::CARD_SIZE> data) {
@@ -160,6 +165,22 @@ namespace com::saxbophone::wondercard {
             return
                 this->read_sector(sector_index, sector) and
                 this->_read_block_sector<sector_index + 1>(block_sector, data);
+        }
+    }
+
+    template <std::size_t block_index>
+    bool MemoryCardSlot::_read_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data) {
+        // use subspan to write block data to output
+        MemoryCard::Block block = data.subspan<block_index * MemoryCard::BLOCK_SIZE, MemoryCard::BLOCK_SIZE>();
+        // base case
+        if constexpr (block_index == (MemoryCard::CARD_BLOCK_COUNT - 1)) {
+            // last block
+            return this->read_block(block_index, block);
+        } else {
+            // this and next block (recursive template call)
+            return
+                this->read_block(block_index, block) and
+                this->_read_card_block<block_index + 1>(data);
         }
     }
 }

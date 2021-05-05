@@ -121,7 +121,11 @@ SCENARIO("Using higher level I/O API to read entire MemoryCard") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 THEN("Calling MemoryCardSlot.read_card() returns an array identical to the data") {
-                    auto card_data = slot.read_card();
+                    std::array<
+                        Byte,
+                        MemoryCard::CARD_SIZE
+                    > card_data;
+                    REQUIRE(slot.read_card(card_data));
                     for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
                         REQUIRE(card_data[i] == data[i]);
                     }

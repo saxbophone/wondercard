@@ -69,7 +69,7 @@ namespace com::saxbophone::wondercard {
          * @returns Card data contents as array of bytes
          * @warning Not Implemented
          */
-        std::array<Byte, MemoryCard::CARD_SIZE> read_card();
+        bool read_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Writes data from the given span to the entire card
@@ -121,6 +121,9 @@ namespace com::saxbophone::wondercard {
     private:
         template <std::size_t sector_index>
         bool _read_block_sector(std::size_t block_sector, MemoryCard::Block data);
+
+        template <std::size_t block_index>
+        bool _read_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         MemoryCard* _inserted_card;
     };
