@@ -76,4 +76,12 @@ namespace com::saxbophone::wondercard {
     void MemoryCardSlot::write_block(std::size_t index, MemoryCard::Block data) {
         return;
     }
+
+    std::array<Byte, MemoryCard::SECTOR_SIZE> MemoryCardSlot::read_sector(std::size_t index) {
+        return {};
+    }
+
+    void MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
+        return;
+    }
 }

@@ -212,3 +212,60 @@ SCENARIO("Using higher level I/O API to write a MemoryCard Block") {
         }
     }
 }
+
+SCENARIO("Using higher level I/O API to read a MemoryCard Sector") {
+    GIVEN("A Sector's-worth of random data") {
+        std::array<
+            Byte,
+            MemoryCard::SECTOR_SIZE
+        > data = generate_random_bytes<MemoryCard::SECTOR_SIZE>();
+        // generate valid sector numbers to try reading
+        std::size_t sector_number = GENERATE(range(0x000u, 0x3FFu)); // 0..1023
+        AND_GIVEN("A MemoryCard with a specific sector filled with the data") {
+            MemoryCard card;
+            auto sector = card.get_sector(sector_number);
+            for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {
+                sector[i] = data[i];
+            }
+            AND_GIVEN("A MemoryCardSlot with the card inserted into it") {
+                MemoryCardSlot slot;
+                REQUIRE(slot.insert_card(card));
+                WHEN("MemoryCardSlot.read_sector() is called with the sector number") {
+                    auto sector_data = slot.read_sector(sector_number);
+                    THEN("The returned data is equal to the generated data") {
+                        for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {
+                            REQUIRE(sector_data[i] == data[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+SCENARIO("Using higher level I/O API to write a MemoryCard Sector") {
+    GIVEN("A Sector's-worth of random data") {
+        std::array<
+            Byte,
+            MemoryCard::SECTOR_SIZE
+        > data = generate_random_bytes<MemoryCard::SECTOR_SIZE>();
+        // generate valid sector numbers to try reading
+        std::size_t sector_number = GENERATE(range(0x000u, 0x3FFu)); // 0..1023
+        AND_GIVEN("A blank MemoryCard") {
+            MemoryCard card;
+            AND_GIVEN("A MemoryCardSlot with the card inserted into it") {
+                MemoryCardSlot slot;
+                REQUIRE(slot.insert_card(card));
+                WHEN("MemoryCardSlot.write_sector() is called with the sector number and generated data") {
+                    slot.write_sector(sector_number, data);
+                    THEN("The corresponding sector of the card is equal to generated data") {
+                        auto sector = card.get_sector(sector_number);
+                        for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {
+                            REQUIRE(sector[i] == data[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
