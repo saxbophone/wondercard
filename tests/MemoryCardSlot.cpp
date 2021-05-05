@@ -230,11 +230,12 @@ SCENARIO("Using higher level I/O API to read a MemoryCard Sector") {
             AND_GIVEN("A MemoryCardSlot with the card inserted into it") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
-                WHEN("MemoryCardSlot.read_sector() is called with the sector number") {
-                    auto sector_data = slot.read_sector(sector_number);
-                    THEN("The returned data is equal to the generated data") {
+                WHEN("MemoryCardSlot.read_sector() is called with the sector number and a destination array") {
+                    std::array<Byte, MemoryCard::SECTOR_SIZE> output;
+                    REQUIRE(slot.read_sector(sector_number, output));
+                    THEN("The output data is equal to the generated data") {
                         for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {
-                            REQUIRE(sector_data[i] == data[i]);
+                            REQUIRE(output[i] == data[i]);
                         }
                     }
                 }

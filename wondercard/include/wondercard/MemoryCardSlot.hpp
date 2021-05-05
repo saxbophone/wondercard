@@ -97,11 +97,12 @@ namespace com::saxbophone::wondercard {
 
         /**
          * @brief Reads the specified sector of the inserted card
-         * @returns Sector data contents as array of bytes
+         * @returns false if failed to read data
+         * @returns true if succeeded to read data
          * @param index Sector to read from
-         * @warning Not Implemented
+         * @param[out] data Span to write read data to
          */
-        std::array<Byte, MemoryCard::SECTOR_SIZE> read_sector(std::size_t index);
+        bool read_sector(std::size_t index, std::span<Byte, MemoryCard::SECTOR_SIZE> data);
 
         /**
          * @brief Writes data from the given span to the specified sector of
