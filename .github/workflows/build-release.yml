@@ -63,6 +63,9 @@ jobs:
     needs: build-release
     steps:
       - uses: actions/checkout@v2
+      - name: Set Tag / Branch Name
+        shell: bash
+        run: export TAG_NAME=${GITHUB_REF#"refs/tags/"}
       - name: Build Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1.3.1
       - name: Deploy Docs to github-pages
@@ -70,5 +73,5 @@ jobs:
         with:
           branch: gh-pages
           folder: html
-          target-folder: ${{github.ref}}
+          target-folder: ${{env.TAG_NAME}}
           clean: false
