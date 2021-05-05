@@ -9,7 +9,7 @@ else()
     set(WONDERCARD_SUBPROJECT ON)
 endif()
 
-project(wondercard VERSION 0.1.8 LANGUAGES CXX)
+project(wondercard VERSION 0.1.9 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
