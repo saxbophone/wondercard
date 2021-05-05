@@ -185,3 +185,30 @@ SCENARIO("Using higher level I/O API to read a MemoryCard Block") {
         }
     }
 }
+
+SCENARIO("Using higher level I/O API to write a MemoryCard Block") {
+    GIVEN("A Block's-worth of random data") {
+        std::array<
+            Byte,
+            MemoryCard::BLOCK_SIZE
+        > data = generate_random_bytes<MemoryCard::BLOCK_SIZE>();
+        // generate valid block numbers to try reading
+        std::size_t block_number = GENERATE(range(0u, 15u));
+        AND_GIVEN("A blank MemoryCard") {
+            MemoryCard card;
+            AND_GIVEN("A MemoryCardSlot with the card inserted into it") {
+                MemoryCardSlot slot;
+                REQUIRE(slot.insert_card(card));
+                WHEN("MemoryCardSlot.write_block() is called with the block number and generated data") {
+                    slot.write_block(block_number, data);
+                    THEN("The corresponding block of the card is equal to generated data") {
+                        auto block = card.get_block(block_number);
+                        for (std::size_t i = 0; i < MemoryCard::BLOCK_SIZE; i++) {
+                            REQUIRE(block[i] == data[i]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
