@@ -63,15 +63,27 @@ jobs:
     needs: build-release
     steps:
       - uses: actions/checkout@v2
-      - name: Set Tag / Branch Name
+      - name: Set Tag Name
         shell: bash
+        # trim prefix from ref to get tag name
         run: echo "TAG_NAME=${GITHUB_REF#'refs/tags/'}" >> $GITHUB_ENV
+      - name: Format Docs Version Name
+        shell: bash
+        # trim patch version off version number as minor version specifies ABI changes
+        run: echo "DOCS_VERSION=${TAG_NAME%.*}" >> $GITHUB_ENV
       - name: Build Doxygen Docs
         uses: mattnotmitt/doxygen-action@v1.3.1
+      - name: Set up latest docs auto-linking
+        shell: bash
+        # make docs folder, move docs there, call script to generate HTML redirect in index
+        run: |
+          mkdir docs
+          mv html docs/$DOCS_VERSION
+          ./generate_index $DOCS_VERSION
       - name: Deploy Docs to github-pages
         uses: JamesIves/github-pages-deploy-action@4.1.1
         with:
           branch: gh-pages
           folder: html
-          target-folder: ${{env.TAG_NAME}}
+          target-folder: ${{env.DOCS_VERSION}}
           clean: false
