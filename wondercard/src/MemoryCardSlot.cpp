@@ -70,8 +70,13 @@ namespace com::saxbophone::wondercard {
         return this->_read_card_block<0>(data);
     }
 
-    void MemoryCardSlot::write_card(std::span<Byte, MemoryCard::CARD_SIZE> data) {
-        return;
+    bool MemoryCardSlot::write_card(std::span<Byte, MemoryCard::CARD_SIZE> data) {
+        // guard against writing when no card in slot
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // write each block of the card using template recursion
+        return this->_write_card_block<0>(data);
     }
 
     bool MemoryCardSlot::read_block(std::size_t index, MemoryCard::Block data) {
@@ -86,8 +91,16 @@ namespace com::saxbophone::wondercard {
         return this->_read_block_sector<0>(block_sector, data);
     }
 
-    void MemoryCardSlot::write_block(std::size_t index, MemoryCard::Block data) {
-        return;
+    bool MemoryCardSlot::write_block(std::size_t index, MemoryCard::Block data) {
+        // guard against writing when no card in slot
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // TODO: Validate index???
+        // calculate first sector of block (just shift block number by number of bits of sectors)
+        std::size_t block_sector = index << 6;
+        // write each sector of the block using template recursion
+        return this->_write_block_sector<0>(block_sector, data);
     }
 
     bool MemoryCardSlot::read_sector(std::size_t index, MemoryCard::Sector data) {
@@ -149,7 +162,7 @@ namespace com::saxbophone::wondercard {
     }
 
     bool MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
-        // guard against reading when no card in slot
+        // guard against writing when no card in slot
         if (this->_inserted_card == nullptr) {
             return false;
         }
@@ -200,7 +213,8 @@ namespace com::saxbophone::wondercard {
         };
         for (std::size_t i = 0; i < 3; i++) {
             // all remaining commands send 00h
-            if (!this->_inserted_card->send(0x00, output) and i != 2) {
+            bool ack = this->_inserted_card->send(0x00, output);
+            if (i != 2 and not ack) {
                 return false; // expect ACK on all but last
             }
             // validate response unless response is don't-care
@@ -231,6 +245,22 @@ namespace com::saxbophone::wondercard {
         }
     }
 
+    template <std::size_t sector_index>
+    bool MemoryCardSlot::_write_block_sector(std::size_t block_sector, MemoryCard::Block data) {
+        // use subspan to write sector data to card
+        MemoryCard::Sector sector = data.subspan<sector_index * MemoryCard::SECTOR_SIZE, MemoryCard::SECTOR_SIZE>();
+        // base case
+        if constexpr (sector_index == (MemoryCard::BLOCK_SECTOR_COUNT - 1)) {
+            // last sector
+            return this->write_sector(block_sector + sector_index, sector);
+        } else {
+            // this and next sector (recursive template call)
+            return
+                this->write_sector(block_sector + sector_index, sector) and
+                this->_write_block_sector<sector_index + 1>(block_sector, data);
+        }
+    }
+
     template <std::size_t block_index>
     bool MemoryCardSlot::_read_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data) {
         // use subspan to write block data to output
@@ -244,6 +274,22 @@ namespace com::saxbophone::wondercard {
             return
                 this->read_block(block_index, block) and
                 this->_read_card_block<block_index + 1>(data);
+        }
+    }
+
+    template <std::size_t block_index>
+    bool MemoryCardSlot::_write_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data) {
+        // use subspan to write block data to card
+        MemoryCard::Block block = data.subspan<block_index * MemoryCard::BLOCK_SIZE, MemoryCard::BLOCK_SIZE>();
+        // base case
+        if constexpr (block_index == (MemoryCard::CARD_BLOCK_COUNT - 1)) {
+            // last block
+            return this->write_block(block_index, block);
+        } else {
+            // this and next block (recursive template call)
+            return
+                this->write_block(block_index, block) and
+                this->_write_card_block<block_index + 1>(data);
         }
     }
 }

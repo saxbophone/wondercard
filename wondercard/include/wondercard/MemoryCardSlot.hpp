@@ -75,9 +75,10 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief Writes data from the given span to the entire card
          * @param data Data to write to the card
-         * @warning Not Implemented
+         * @returns false if failed to write data
+         * @returns true if succeeded to write data
          */
-        void write_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
+        bool write_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Reads the specified block of the inserted card
@@ -95,9 +96,10 @@ namespace com::saxbophone::wondercard {
          * inserted card.
          * @param index Block to write to
          * @param data Data to write to the block
-         * @warning Not Implemented
+         * @returns false if failed to write data
+         * @returns true if succeeded to write data
          */
-        void write_block(std::size_t index, MemoryCard::Block data);
+        bool write_block(std::size_t index, MemoryCard::Block data);
 
         /**
          * @brief Reads the specified sector of the inserted card
@@ -115,7 +117,8 @@ namespace com::saxbophone::wondercard {
          * the inserted card.
          * @param index Sector to write to
          * @param data Data to write to the sector
-         * @warning Not Implemented
+         * @returns false if failed to write data
+         * @returns true if succeeded to write data
          */
         bool write_sector(std::size_t index, MemoryCard::Sector data);
 
@@ -123,8 +126,14 @@ namespace com::saxbophone::wondercard {
         template <std::size_t sector_index>
         bool _read_block_sector(std::size_t block_sector, MemoryCard::Block data);
 
+        template <std::size_t sector_index>
+        bool _write_block_sector(std::size_t block_sector, MemoryCard::Block data);
+
         template <std::size_t block_index>
         bool _read_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
+        template <std::size_t block_index>
+        bool _write_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         MemoryCard* _inserted_card;
     };

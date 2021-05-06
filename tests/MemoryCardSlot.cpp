@@ -147,7 +147,7 @@ SCENARIO("Using higher level I/O API to write entire MemoryCard") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 WHEN("MemoryCardSlot.write_card() is called with the data") {
-                    slot.write_card(data);
+                    REQUIRE(slot.write_card(data));
                     THEN("The card data bytes should equal those of the data") {
                         auto bytes = card.bytes;
                         for (std::size_t i = 0; i < MemoryCard::CARD_SIZE; i++) {
@@ -208,7 +208,7 @@ SCENARIO("Using higher level I/O API to write a MemoryCard Block") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 WHEN("MemoryCardSlot.write_block() is called with the block number and generated data") {
-                    slot.write_block(block_number, data);
+                    REQUIRE(slot.write_block(block_number, data));
                     THEN("The corresponding block of the card is equal to generated data") {
                         auto block = card.get_block(block_number);
                         for (std::size_t i = 0; i < MemoryCard::BLOCK_SIZE; i++) {
