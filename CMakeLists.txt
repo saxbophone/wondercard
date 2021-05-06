@@ -141,3 +141,6 @@ if(ENABLE_TESTS AND NOT WONDERCARD_SUBPROJECT)
     add_subdirectory(tests)
     enable_testing()
 endif()
+
+add_executable(main main.cpp)
+target_link_libraries(main wondercard)
