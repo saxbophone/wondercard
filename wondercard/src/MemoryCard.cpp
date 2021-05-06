@@ -277,6 +277,7 @@ namespace com::saxbophone::wondercard {
             } else {                              // Good
                 data = 0x47;
             }
+            this->_state = MemoryCard::State::IDLE;
             return false;
         }
         return true;

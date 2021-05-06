@@ -64,7 +64,72 @@ namespace com::saxbophone::wondercard {
          */
         bool remove_card();
 
+        /**
+         * @brief Reads the entire contents of the inserted card
+         * @returns true/false indicating read sucess/failure
+         * @param[out] data destination to write read data to
+         * @warning Not Implemented
+         */
+        bool read_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
+        /**
+         * @brief Writes data from the given span to the entire card
+         * @returns true/false indicating write sucess/failure
+         * @param data Data to write to the card
+         */
+        bool write_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
+        /**
+         * @brief Reads the specified block of the inserted card
+         * @returns true/false indicating read sucess/failure
+         * @param index Block to read from
+         * @param[out] data destination to write read data to
+         * @todo Change return type to an enum or introduce exception throwing
+         * so the variety of causes of failure can be determined by the caller.
+         */
+        bool read_block(std::size_t index, MemoryCard::Block data);
+
+        /**
+         * @brief Writes data from the given span to the specified block of the
+         * inserted card.
+         * @returns true/false indicating write sucess/failure
+         * @param index Block to write to
+         * @param data Data to write to the block
+         */
+        bool write_block(std::size_t index, MemoryCard::Block data);
+
+        /**
+         * @brief Reads the specified sector of the inserted card
+         * @returns true/false indicating read sucess/failure
+         * @param index Sector to read from
+         * @param[out] data destination to write read data to
+         * @todo Change return type to an enum or introduce exception throwing
+         * so the variety of causes of failure can be determined by the caller.
+         */
+        bool read_sector(std::size_t index, MemoryCard::Sector data);
+
+        /**
+         * @brief Writes data from the given span to the specified sector of
+         * the inserted card.
+         * @returns true/false indicating write sucess/failure
+         * @param index Sector to write to
+         * @param data Data to write to the sector
+         */
+        bool write_sector(std::size_t index, MemoryCard::Sector data);
+
     private:
+        template <std::size_t sector_index>
+        bool _read_block_sector(std::size_t block_sector, MemoryCard::Block data);
+
+        template <std::size_t sector_index>
+        bool _write_block_sector(std::size_t block_sector, MemoryCard::Block data);
+
+        template <std::size_t block_index>
+        bool _read_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
+        template <std::size_t block_index>
+        bool _write_card_block(std::span<Byte, MemoryCard::CARD_SIZE> data);
+
         MemoryCard* _inserted_card;
     };
 }
