@@ -9,7 +9,7 @@ else()
     set(WONDERCARD_SUBPROJECT ON)
 endif()
 
-project(wondercard VERSION 0.2.0 LANGUAGES CXX)
+project(wondercard VERSION 0.2.1 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -141,3 +141,6 @@ if(ENABLE_TESTS AND NOT WONDERCARD_SUBPROJECT)
     add_subdirectory(tests)
     enable_testing()
 endif()
+
+add_executable(main main.cpp)
+target_link_libraries(main wondercard)
