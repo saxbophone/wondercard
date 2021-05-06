@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Wondercard: Main Page</title>
+<title>Wondercard: Wondercard</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Wondercard
-   &#160;<span id="projectnumber">v0.2.0</span>
+   &#160;<span id="projectnumber">v0.2.1</span>
    </div>
    <div id="projectbrief">A fully virtual emulation of the protocol used by Memory Cards for the PlayStation.</div>
   </td>
@@ -62,11 +62,90 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Wondercard Documentation</div>  </div>
+<div class="title">Wondercard </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p><a class="anchor" id="md_README"></a>A fully virtual emulation of the protocol used by Memory Cards for the PlayStation.</p>
+<p>This is a application-layer emulation of the Memory Card protocol, therefore the miscellany of the SPI protocol used at the signal level to communicate between the PlayStation and Memory Card is not represented exactly.</p>
+<p>Instead we limit our representation to a model where bytes are sent to and from the virtual memory card, and provide a basic representation of Z-state (high impedance) inputs/outputs on the MOSI/MISO lines and a way to represent a missing card (ACK line never brought low).</p>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Installation</h1>
+<p>This project builds with CMake v3.15+ on recent versions of Linux, macOS and Windows. You need a compiler supporting some C++20 features to build it.</p>
+<div class="fragment"><div class="line">cd build  # or whatever other place you want to compile</div>
+<div class="line">cmake ..</div>
+<div class="line">make</div>
+<div class="line">make install  # optional</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md2"></a>
+Usage</h1>
+<p>Everything lives in the <a class="el" href="namespacecom_1_1saxbophone_1_1wondercard.html">com::saxbophone::wondercard</a> namespace.</p>
+<p>The current functionality comprises a virtual <a class="el" href="classcom_1_1saxbophone_1_1wondercard_1_1MemoryCard.html">MemoryCard</a> class which implements the logic found on memory cards, and a virtual <a class="el" href="classcom_1_1saxbophone_1_1wondercard_1_1MemoryCardSlot.html">MemoryCardSlot</a> class for reading and writing the cards.</p>
+<h2><a class="anchor" id="autotoc_md3"></a>
+Complete Intro Demo</h2>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;array&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="common_8hpp.html">wondercard/common.hpp</a>&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="MemoryCard_8hpp.html">wondercard/MemoryCard.hpp</a>&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;<a class="code" href="MemoryCardSlot_8hpp.html">wondercard/MemoryCardSlot.hpp</a>&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keywordtype">int</span> main() {</div>
+<div class="line">    <span class="keyword">using namespace </span>com::saxbophone;</div>
+<div class="line">    <span class="comment">/*</span></div>
+<div class="line"><span class="comment">     * Fill the whole card with value 0x13</span></div>
+<div class="line"><span class="comment">     * We can use any other type for the container as long as it is convertible</span></div>
+<div class="line"><span class="comment">     * to std::span</span></div>
+<div class="line"><span class="comment">     */</span></div>
+<div class="line">    std::array&lt;wondercard::Byte, wondercard::MemoryCard::CARD_SIZE&gt; card_data;</div>
+<div class="line">    card_data.fill(0x13);</div>
+<div class="line">    <span class="comment">// initialise card with data</span></div>
+<div class="line">    wondercard::MemoryCard card(card_data);</div>
+<div class="line">    wondercard::MemoryCardSlot slot;</div>
+<div class="line">    <span class="comment">// we must insert the card into the slot before we can read or write it</span></div>
+<div class="line">    <span class="keywordflow">if</span> (not slot.insert_card(card)) {</div>
+<div class="line">        <span class="keywordflow">return</span> -1; <span class="comment">// failed to insert card</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="comment">// read card data back out</span></div>
+<div class="line">    std::array&lt;wondercard::Byte, wondercard::MemoryCard::CARD_SIZE&gt; read_data;</div>
+<div class="line">    <span class="keywordflow">if</span> (not slot.read_card(read_data)) {</div>
+<div class="line">        <span class="keywordflow">return</span> -1; <span class="comment">// read failure</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="comment">// read data should be identical to card data</span></div>
+<div class="line">    <span class="keywordflow">if</span> (not (read_data == card_data)) {</div>
+<div class="line">        <span class="keywordflow">return</span> -1;</div>
+<div class="line">    }</div>
+<div class="line">    <span class="comment">// we can also write data to the card, or write just specific parts of it</span></div>
+<div class="line">    std::array&lt;wondercard::Byte, wondercard::MemoryCard::SECTOR_SIZE&gt; sector = {</div>
+<div class="line">        0x13, 0x14, 0x15, 0x16, 0xCD, 0xBC, 0xB6, 0xB9, <span class="comment">/* remainder unspecified */</span></div>
+<div class="line">    };</div>
+<div class="line">    <span class="comment">// use sector values 0..1023 / 0x000..0x3FF</span></div>
+<div class="line">    <span class="keywordflow">if</span> (not slot.write_sector(0x115, sector)) {</div>
+<div class="line">        <span class="keywordflow">return</span> -1; <span class="comment">// read failure</span></div>
+<div class="line">    }</div>
+<div class="line">    slot.remove_card();</div>
+<div class="line">}</div>
+<div class="ttc" id="aMemoryCardSlot_8hpp_html"><div class="ttname"><a href="MemoryCardSlot_8hpp.html">MemoryCardSlot.hpp</a></div></div>
+<div class="ttc" id="aMemoryCard_8hpp_html"><div class="ttname"><a href="MemoryCard_8hpp.html">MemoryCard.hpp</a></div></div>
+<div class="ttc" id="acommon_8hpp_html"><div class="ttname"><a href="common_8hpp.html">common.hpp</a></div></div>
+</div><!-- fragment --><p>If the default constructor for <a class="el" href="classcom_1_1saxbophone_1_1wondercard_1_1MemoryCard.html">MemoryCard</a> is used, then the card is initialised with all-zero data.</p>
+<p>Reading and writing cards is supported for the entire card, by Block (analogous to the save blocks used by the PlayStation card manager) and by Sector. A Card is divided into 16 Blocks, each of these being divided into 64 Sectors. Here is a table of Card, Block and Sector size conversions:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Row per Column   </th><th class="markdownTableHeadNone">Card   </th><th class="markdownTableHeadNone">Block   </th><th class="markdownTableHeadNone">Sector    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Block   </td><td class="markdownTableBodyNone">16   </td><td class="markdownTableBodyNone">1   </td><td class="markdownTableBodyNone">N/A    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Sector   </td><td class="markdownTableBodyNone">1024   </td><td class="markdownTableBodyNone">64   </td><td class="markdownTableBodyNone">1    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Byte   </td><td class="markdownTableBodyNone">128KiB   </td><td class="markdownTableBodyNone">8192   </td><td class="markdownTableBodyNone">128   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md4"></a>
+API Reference</h1>
+<p><a href="https://saxbophone.com/wondercard">Online Documentation</a></p>
+<blockquote class="doxtable">
+<p>The docs site is separated by minor version. You can access documentation for other versions of the project by changing the <code>v*.*</code> part of the URL. Currently, only minor versions are intended to be compatible with eachother. </p>
+</blockquote>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
