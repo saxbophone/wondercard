@@ -66,26 +66,24 @@ namespace com::saxbophone::wondercard {
 
         /**
          * @brief Reads the entire contents of the inserted card
+         * @returns true/false indicating read sucess/failure
          * @param[out] data Span to write read data to
-         * @returns Card data contents as array of bytes
          * @warning Not Implemented
          */
         bool read_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Writes data from the given span to the entire card
+         * @returns true/false indicating write sucess/failure
          * @param data Data to write to the card
-         * @returns false if failed to write data
-         * @returns true if succeeded to write data
          */
         bool write_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
 
         /**
          * @brief Reads the specified block of the inserted card
-         * @returns false if failed to read data
-         * @returns true if succeeded to read data
+         * @returns true/false indicating read sucess/failure
          * @param index Block to read from
-         * @param[out] data Span to write read data to
+         * @param[out] data destination to write read data to
          * @todo Change return type to an enum or introduce exception throwing
          * so the variety of causes of failure can be determined by the caller.
          */
@@ -94,17 +92,15 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief Writes data from the given span to the specified block of the
          * inserted card.
+         * @returns true/false indicating read sucess/failure
          * @param index Block to write to
          * @param data Data to write to the block
-         * @returns false if failed to write data
-         * @returns true if succeeded to write data
          */
         bool write_block(std::size_t index, MemoryCard::Block data);
 
         /**
          * @brief Reads the specified sector of the inserted card
-         * @returns false if failed to read data
-         * @returns true if succeeded to read data
+         * @returns true/false indicating read sucess/failure
          * @param index Sector to read from
          * @param[out] data Span to write read data to
          * @todo Change return type to an enum or introduce exception throwing
@@ -115,10 +111,9 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief Writes data from the given span to the specified sector of
          * the inserted card.
+         * @returns true/false indicating write sucess/failure
          * @param index Sector to write to
          * @param data Data to write to the sector
-         * @returns false if failed to write data
-         * @returns true if succeeded to write data
          */
         bool write_sector(std::size_t index, MemoryCard::Sector data);
 
