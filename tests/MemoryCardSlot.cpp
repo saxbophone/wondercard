@@ -266,7 +266,7 @@ SCENARIO("Using higher level I/O API to write a MemoryCard Sector") {
                 MemoryCardSlot slot;
                 REQUIRE(slot.insert_card(card));
                 WHEN("MemoryCardSlot.write_sector() is called with the sector number and generated data") {
-                    slot.write_sector(sector_number, data);
+                    REQUIRE(slot.write_sector(sector_number, data));
                     THEN("The corresponding sector of the card is equal to generated data") {
                         auto sector = card.get_sector(sector_number);
                         for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {

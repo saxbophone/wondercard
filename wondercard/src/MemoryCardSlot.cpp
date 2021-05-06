@@ -148,8 +148,71 @@ namespace com::saxbophone::wondercard {
         return end_ack == false and output == 0x47 and card_checksum == checksum;
     }
 
-    void MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
-        return;
+    bool MemoryCardSlot::write_sector(std::size_t index, MemoryCard::Sector data) {
+        // guard against reading when no card in slot
+        if (this->_inserted_card == nullptr) {
+            return false;
+        }
+        // TODO: Validate index???
+        // scratchpad variable for card responses
+        TriState output = std::nullopt;
+        // get MSB and LSB of sector index
+        Byte msb = (index & 0x300u) >> 8;
+        Byte lsb = index & 0x0FFu;
+        // command sequence to send to the card before sector data is sent
+        Byte commands[] = {
+            0x81, 0x57, 0x00, 0x00, msb, lsb,
+        };
+        // expected valid responses (std::nullopt indicates don't-cares)
+        TriState valid_responses[] = {
+            {},   {},   0x5A, 0x5D, {},  {},
+        };
+        // send each command in commands sequence and bail if no ACK or response wrong
+        for (std::size_t i = 0; i < 6; i++) {
+            if (!this->_inserted_card->send(commands[i], output)) {
+                return false; // no ACK, oh dear!
+            }
+            // validate response unless response is don't-care
+            if (
+                valid_responses[i] != std::nullopt and
+                output != valid_responses[i]
+            ) {
+                return false; // invalid response
+            }
+        }
+        // calculate checksum value so far (MSB XOR LSB)
+        Byte checksum = msb ^ lsb;
+        // if this point is reached, we are ready to write sector data
+        for (std::size_t i = 0; i < MemoryCard::SECTOR_SIZE; i++) {
+            if (!this->_inserted_card->send(data[i], output)) {
+                return false; // no ACK, oh dear!
+            }
+            // update checksum
+            checksum ^= data[i];
+        }
+        // send our calculated checksum value
+        if (!this->_inserted_card->send(checksum, output)) {
+            return false; // no ACK
+        }
+        // next two bytes received should be "Command Acknowledge" followed by end byte status
+        TriState footer_responses[] = {
+            0x5C, 0x5D,   {},
+        };
+        for (std::size_t i = 0; i < 3; i++) {
+            // all remaining commands send 00h
+            if (!this->_inserted_card->send(0x00, output) and i != 2) {
+                return false; // expect ACK on all but last
+            }
+            // validate response unless response is don't-care
+            if (
+                footer_responses[i] != std::nullopt and
+                output != footer_responses[i]
+            ) {
+                return false; // invalid response
+            }
+        }
+        // TODO: We really need a way to tell apart different kinds of fail
+        return output == 0x47; // 0x4Eh = Bad Checksum, 0xFFh = Bad Sector
     }
 
     template <std::size_t sector_index>

@@ -117,7 +117,7 @@ namespace com::saxbophone::wondercard {
          * @param data Data to write to the sector
          * @warning Not Implemented
          */
-        void write_sector(std::size_t index, MemoryCard::Sector data);
+        bool write_sector(std::size_t index, MemoryCard::Sector data);
 
     private:
         template <std::size_t sector_index>
