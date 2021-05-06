@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Doxygen Docs
-        uses: saxbophone/doxygen-action
+        uses: saxbophone/doxygen-action@master
 
   continuous-integration:
     runs-on: ${{ matrix.os }}
