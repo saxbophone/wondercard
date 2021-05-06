@@ -67,7 +67,7 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief Reads the entire contents of the inserted card
          * @returns true/false indicating read sucess/failure
-         * @param[out] data Span to write read data to
+         * @param[out] data destination to write read data to
          * @warning Not Implemented
          */
         bool read_card(std::span<Byte, MemoryCard::CARD_SIZE> data);
@@ -92,7 +92,7 @@ namespace com::saxbophone::wondercard {
         /**
          * @brief Writes data from the given span to the specified block of the
          * inserted card.
-         * @returns true/false indicating read sucess/failure
+         * @returns true/false indicating write sucess/failure
          * @param index Block to write to
          * @param data Data to write to the block
          */
@@ -102,7 +102,7 @@ namespace com::saxbophone::wondercard {
          * @brief Reads the specified sector of the inserted card
          * @returns true/false indicating read sucess/failure
          * @param index Sector to read from
-         * @param[out] data Span to write read data to
+         * @param[out] data destination to write read data to
          * @todo Change return type to an enum or introduce exception throwing
          * so the variety of causes of failure can be determined by the caller.
          */
