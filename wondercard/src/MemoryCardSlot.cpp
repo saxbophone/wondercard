@@ -216,6 +216,7 @@ namespace com::saxbophone::wondercard {
             bool ack = this->_inserted_card->send(0x00, output);
             if (i != 2 and not ack) {
                 return false; // expect ACK on all but last
+                // TODO: verify last one gives NACK?
             }
             // validate response unless response is don't-care
             if (

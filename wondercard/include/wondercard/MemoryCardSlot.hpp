@@ -35,6 +35,17 @@ namespace com::saxbophone::wondercard {
      */
     class MemoryCardSlot {
     public:
+        enum class IOResult {
+            UNKNOWN_STATUS = 0,
+            NO_CARD,
+            NO_ACK,
+            INVALID_RESPONSE,
+            UNEXPECTED_ACK,
+            BAD_CHECKSUM,
+            BED_SECTOR,
+            SUCCESS,
+        };
+
         MemoryCardSlot();
 
         /**
