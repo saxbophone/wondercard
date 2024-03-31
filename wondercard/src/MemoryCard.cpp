@@ -27,7 +27,6 @@ namespace com::saxbophone::wondercard {
       , bytes(this->_bytes)
       , _powered_on(false)
       , _flag(MemoryCard::_FLAG_INIT_VALUE)
-      , _state(MemoryCard::_STARTING_STATE)
       {}
 
     MemoryCard::MemoryCard(
@@ -43,7 +42,6 @@ namespace com::saxbophone::wondercard {
             // set powered on and reset flag value to default
             this->_powered_on = true;
             this->_flag = MemoryCard::_FLAG_INIT_VALUE;
-            this->_state = MemoryCard::_STARTING_STATE;
             return true;
         } else { // card is already powered on! no-op
             return false;
@@ -63,45 +61,13 @@ namespace com::saxbophone::wondercard {
         if (!this->powered_on) {
             return false;
         } else {
-            switch (this->_state) {
-            case MemoryCard::State::IDLE:
-                if (command == 0x81) { // a Memory Card command
-                    this->_state = MemoryCard::State::AWAITING_COMMAND;
-                    return true;
-                } else { // ignore commands that aren't for Memory Cards
-                    return false;
-                }
-            case MemoryCard::State::AWAITING_COMMAND:
-                // always send FLAG in response
-                data = this->_flag;
-                switch (command.value_or(0x00)) { // decode memory card command
-                case 0x52:
-                    this->_state = MemoryCard::State::READ_DATA_COMMAND;
-                    this->_sub_state.read_state = MemoryCard::ReadState::RECV_MEMCARD_ID_1;
-                    break;
-                case 0x57:
-                    this->_state = MemoryCard::State::WRITE_DATA_COMMAND;
-                    this->_sub_state.write_state = MemoryCard::WriteState::RECV_MEMCARD_ID_1;
-                    break;
-                case 0x53:
-                    this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
-                    this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_MEMCARD_ID_1;
-                    break;
-                default:
-                    this->_state = MemoryCard::State::IDLE;
-                    return false; // No ACK (last byte)
-                }
-                return true; // ACK
-            // otherwise, use sub-state-machines
-            case MemoryCard::State::READ_DATA_COMMAND:
-                return read_data_command(command, data);
-            case MemoryCard::State::WRITE_DATA_COMMAND:
-                return write_data_command(command, data);
-            case MemoryCard::State::GET_MEMCARD_ID_COMMAND:
-                return get_memcard_id_command(command, data);
-            default:
-                return false; // NACK
+            this->_data_in = command;
+            if (not this->_state_machine) {
+                this->_state_machine = this->_process_command(this->_data_in);
             }
+            auto [ack, data_out] = this->_state_machine();
+            data = data_out;
+            return ack;
         }
     }
 
@@ -121,36 +87,38 @@ namespace com::saxbophone::wondercard {
         );
     }
 
-    Generator<std::pair<bool, TriState>> MemoryCard::_state_machine(const TriState& data_in) {
-        while (data_in != 0x81) co_yield std::make_pair(false, std::nullopt); // ignore commands that aren't for Memory Cards
-        co_yield std::make_pair(true, std::nullopt); // received a Memory Card command --reply with ACK 
-        // always send FLAG in response to a Memory Card command
-        co_yield std::make_pair(true, this->_flag);
-        switch (data_in.value_or(0x00)) { // decode memory card command
-        case 0x52: { // READ_DATA_COMMAND
-            auto read_gen = _read_data_command(data_in);
-            while (read_gen) {
-                co_yield read_gen();
+    Generator<std::pair<bool, TriState>> MemoryCard::_process_command(const TriState& data_in) {
+        while (true) {
+            while (data_in != 0x81) co_yield std::make_pair(false, std::nullopt); // ignore commands that aren't for Memory Cards
+            co_yield std::make_pair(true, std::nullopt); // received a Memory Card command --reply with ACK 
+            switch (data_in.value_or(0x00)) { // decode memory card command
+            case 0x52: { // READ_DATA_COMMAND
+                co_yield std::make_pair(true, this->_flag);
+                auto read_gen = _read_data_command(data_in);
+                while (read_gen) {
+                    co_yield read_gen();
+                }
+                break;
             }
-            break;
-        }
-        case 0x57: { // WRITE_DATA_COMMAND
-            auto write_gen = _write_data_command(data_in);
-            while (write_gen) {
-                co_yield write_gen();
+            case 0x57: { // WRITE_DATA_COMMAND
+                co_yield std::make_pair(true, this->_flag);
+                auto write_gen = _write_data_command(data_in);
+                while (write_gen) {
+                    co_yield write_gen();
+                }
+                break;
             }
-            break;
-        }
-        case 0x53: // GET_MEMCARD_ID_COMMAND
-            for (Byte out : {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00}) {
-                co_yield std::make_pair(true, out);
+            case 0x53: // GET_MEMCARD_ID_COMMAND
+                co_yield std::make_pair(true, this->_flag);
+                for (Byte out : {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00}) {
+                    co_yield std::make_pair(true, out);
+                }
+                co_yield std::make_pair(false, 0x80);
+                break;
+            default:
+                co_yield std::make_pair(false, this->_flag);
             }
-            co_yield std::make_pair(false, 0x80);
-            break;
-        default:
-            co_yield std::make_pair(false, std::nullopt); // No ACK (last byte)
         }
-        co_return;
     }
 
     Generator<std::pair<bool, TriState>> MemoryCard::_read_data_command(const TriState& data_in) {
@@ -236,9 +204,9 @@ namespace com::saxbophone::wondercard {
          * 0x47 = Good, 0x4E = Bad Checksum, 0xFF = Bad Sector
          */
         if (address == 0xFFFF) {       // Bad Sector
-            co_yield std::make_pair(true, 0xFF);
+            co_yield std::make_pair(false, 0xFF);
         } else if (checksum == 0xFF) { // Bad Checksum
-            co_yield std::make_pair(true, 0x4E);
+            co_yield std::make_pair(false, 0x4E);
         } else {                       // Good
             co_yield std::make_pair(false, 0x47);
         }
