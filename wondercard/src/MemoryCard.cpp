@@ -121,6 +121,67 @@ namespace com::saxbophone::wondercard {
         );
     }
 
+    Generator<std::pair<bool, TriState>> MemoryCard::_state_machine(const TriState& data_in) {
+        while (data_in != 0x81) co_yield std::make_pair(false, std::nullopt); // ignore commands that aren't for Memory Cards
+        co_yield std::make_pair(true, std::nullopt); // received a Memory Card command --reply with ACK 
+        // always send FLAG in response to a Memory Card command
+        co_yield std::make_pair(true, this->_flag);
+        switch (data_in.value_or(0x00)) { // decode memory card command
+        case 0x52: {// READ_DATA_COMMAND
+            // reply with memcard ID
+            co_yield std::make_pair(true, 0x5A);
+            co_yield std::make_pair(true, 0x5D);
+            Byte checksum = data_in.value_or(0xFF); // reset checksum
+            std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
+            co_yield std::make_pair(true, 0x00);
+            address |= data_in.value_or(0xFF);
+            checksum ^= (Byte)(address & 0x00FF);
+            // detect invalid sectors (out of bounds)
+            if (address > MemoryCard::_LAST_SECTOR) {
+                address = 0xFFFF; // poison value
+            }
+            co_yield std::make_pair(true, 0x00);
+            // send two ACK bytes
+            co_yield std::make_pair(true, 0x5C);
+            co_yield std::make_pair(true, 0x5D);
+            // send confirmation of address MSB and LSB
+            co_yield std::make_pair(true, (Byte)(address >> 8));
+            Byte lsb = (Byte)(address & 0x00FF);
+            // we'll only continue if sector address is not a poison value
+            if (address == 0xFFFF) {
+                this->_state = MemoryCard::State::IDLE;
+                co_yield std::make_pair(false, lsb);
+                co_return;
+            }
+            co_yield std::make_pair(true, lsb);
+            // send the requested data sector
+            for (Byte counter = 0; counter < 128u; ++counter) {
+                Byte data = this->get_sector(address)[counter];
+                // update checksum
+                checksum ^= data;
+                co_yield std::make_pair(true, data);
+            }
+            // send checksum
+            co_yield std::make_pair(true, checksum);
+            co_yield std::make_pair(false, 0x47); // 0x47: "Good Read"
+            co_return;
+            break;
+        }
+        case 0x57:
+            // this->_state = MemoryCard::State::WRITE_DATA_COMMAND;
+            // this->_sub_state.write_state = MemoryCard::WriteState::RECV_MEMCARD_ID_1;
+            break;
+        case 0x53:
+            // this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
+            // this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_MEMCARD_ID_1;
+            break;
+        default:
+            co_yield std::make_pair(false, std::nullopt); // No ACK (last byte)
+            co_return;
+        }
+        // return true; // ACK
+    }
+
     bool MemoryCard::read_data_command(
         TriState command,
         TriState& data

@@ -21,11 +21,13 @@
 #include <array>
 #include <optional>
 #include <span>
+#include <utility>
 
 #include <cstddef>
 #include <cstdint>
 
 #include <wondercard/common.hpp>
+#include <wondercard/Generator.hpp>
 
 
 namespace com::saxbophone::wondercard {
@@ -121,6 +123,8 @@ namespace com::saxbophone::wondercard {
         std::span<Byte, CARD_SIZE> bytes;
 
     private:
+        Generator<std::pair<bool, TriState>> _state_machine(const TriState& data_in);
+
         enum class State {
             IDLE,                   /**< Not currently in a communication transaction */
             AWAITING_COMMAND,       /**< Which Memory Card Command mode? */

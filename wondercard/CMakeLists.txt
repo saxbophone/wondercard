@@ -35,7 +35,7 @@ set_property(
 # inherit common wondercard compiler options
 target_link_libraries(
     wondercard
-        PRIVATE
+        PUBLIC
             $<BUILD_INTERFACE:wondercard-compiler-options>
 )
 
