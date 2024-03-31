@@ -149,7 +149,6 @@ namespace com::saxbophone::wondercard {
             Byte lsb = (Byte)(address & 0x00FF);
             // we'll only continue if sector address is not a poison value
             if (address == 0xFFFF) {
-                this->_state = MemoryCard::State::IDLE;
                 co_yield std::make_pair(false, lsb);
                 co_return;
             }
