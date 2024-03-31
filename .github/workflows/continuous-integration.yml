@@ -22,8 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.15, ubuntu-20.04]
-        cxx: [g++-10, clang++]
+        os: [macos-13, ubuntu-22.04]
+        cxx: [g++, clang++]
         include:
           - os: windows-2019
             cxx: msvc

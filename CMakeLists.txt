@@ -89,6 +89,9 @@ function(enable_cxx_compiler_flag_if_supported flag)
     unset(flag_supported CACHE)
 endfunction()
 
+# XXX: C++20 coroutine support
+enable_cxx_compiler_flag_if_supported("-fcoroutines")
+
 # enable a large amount of extra warnings, regardless of build mode
 if (MSVC) # MSVC supports different warning options to GCC/Clang
     enable_cxx_compiler_flag_if_supported("/W3") # MSVC Warning level 3, 4 is too pedantic

@@ -21,11 +21,13 @@
 #include <array>
 #include <optional>
 #include <span>
+#include <utility>
 
 #include <cstddef>
 #include <cstdint>
 
 #include <wondercard/common.hpp>
+#include <wondercard/Generator.hpp>
 
 
 namespace com::saxbophone::wondercard {
@@ -121,85 +123,19 @@ namespace com::saxbophone::wondercard {
         std::span<Byte, CARD_SIZE> bytes;
 
     private:
-        enum class State {
-            IDLE,                   /**< Not currently in a communication transaction */
-            AWAITING_COMMAND,       /**< Which Memory Card Command mode? */
-            READ_DATA_COMMAND,      /**< Reading Memory Card Mode */
-            WRITE_DATA_COMMAND,     /**< Writing Memory Card Mode */
-            GET_MEMCARD_ID_COMMAND, /**< Get Memory Card ID Mode */
-        };
-
-        enum class ReadState {
-            RECV_MEMCARD_ID_1,
-            RECV_MEMCARD_ID_2,
-            SEND_ADDRESS_MSB,
-            SEND_ADDRESS_LSB,
-            RECV_COMMAND_ACK_1,
-            RECV_COMMAND_ACK_2,
-            RECV_CONFIRM_ADDRESS_MSB,
-            RECV_CONFIRM_ADDRESS_LSB,
-            RECV_DATA_SECTOR,
-            RECV_CHECKSUM,
-            RECV_END_BYTE,
-        };
-
-        enum class WriteState {
-            RECV_MEMCARD_ID_1,
-            RECV_MEMCARD_ID_2,
-            SEND_ADDRESS_MSB,
-            SEND_ADDRESS_LSB,
-            SEND_DATA_SECTOR,
-            SEND_CHECKSUM,
-            RECV_COMMAND_ACK_1,
-            RECV_COMMAND_ACK_2,
-            RECV_END_BYTE,
-        };
-
-        enum class GetIdState {
-            RECV_MEMCARD_ID_1,
-            RECV_MEMCARD_ID_2,
-            RECV_COMMAND_ACK_1,
-            RECV_COMMAND_ACK_2,
-            RECV_INFO_1,
-            RECV_INFO_2,
-            RECV_INFO_3,
-            RECV_INFO_4,
-        };
-
-        union SubState {
-            ReadState read_state;
-            WriteState write_state;
-            GetIdState get_id_state;
-        };
-
-        bool read_data_command(
-            TriState command,
-            TriState& data
-        );
-
-        bool write_data_command(
-            TriState command,
-            TriState& data
-        );
-
-        bool get_memcard_id_command(
-            TriState command,
-            TriState& data
-        );
+        Generator<std::pair<bool, TriState>> _process_command();
+        Generator<std::pair<bool, TriState>> _read_data_command();
+        Generator<std::pair<bool, TriState>> _write_data_command();
 
         const static Byte _FLAG_INIT_VALUE;
-        const static State _STARTING_STATE;
         const static std::uint16_t _LAST_SECTOR;
 
         bool _powered_on;
         Byte _flag;  // special FLAG value, a kind of status register on card
-        State _state;        // state machine state
-        SubState _sub_state; // sub-machine state
-        std::uint16_t _address; // sector of address to read/write
-        std::uint8_t _byte_counter; // index for tracking how many bytes read/written
-        Byte _checksum; // scratchpad value for calculating checksums
+        TriState _data_in;
         // raw card data bytes
         std::array<Byte, CARD_SIZE> _bytes;
+        Generator<std::pair<bool, TriState>> _state_machine = _process_command();
     };
 }
 
