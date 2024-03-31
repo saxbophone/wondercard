@@ -84,14 +84,14 @@ namespace com::saxbophone::wondercard {
         );
     }
 
-    Generator<std::pair<bool, TriState>> MemoryCard::_process_command(const TriState& data_in) {
+    Generator<std::pair<bool, TriState>> MemoryCard::_process_command() {
         while (true) {
-            while (data_in != 0x81) co_yield std::make_pair(false, std::nullopt); // ignore commands that aren't for Memory Cards
+            while (_data_in != 0x81) co_yield std::make_pair(false, std::nullopt); // ignore commands that aren't for Memory Cards
             co_yield std::make_pair(true, std::nullopt); // received a Memory Card command --reply with ACK 
-            switch (data_in.value_or(0x00)) { // decode memory card command
+            switch (_data_in.value_or(0x00)) { // decode memory card command
             case 0x52: { // READ_DATA_COMMAND
                 co_yield std::make_pair(true, this->_flag);
-                auto read_gen = _read_data_command(data_in);
+                auto read_gen = _read_data_command();
                 while (read_gen) {
                     co_yield read_gen();
                 }
@@ -99,7 +99,7 @@ namespace com::saxbophone::wondercard {
             }
             case 0x57: { // WRITE_DATA_COMMAND
                 co_yield std::make_pair(true, this->_flag);
-                auto write_gen = _write_data_command(data_in);
+                auto write_gen = _write_data_command();
                 while (write_gen) {
                     co_yield write_gen();
                 }
@@ -118,14 +118,14 @@ namespace com::saxbophone::wondercard {
         }
     }
 
-    Generator<std::pair<bool, TriState>> MemoryCard::_read_data_command(const TriState& data_in) {
+    Generator<std::pair<bool, TriState>> MemoryCard::_read_data_command() {
         // reply with two ACK bytes
         co_yield std::make_pair(true, 0x5A);
         co_yield std::make_pair(true, 0x5D);
-        Byte checksum = data_in.value_or(0xFF); // reset checksum
+        Byte checksum = _data_in.value_or(0xFF); // reset checksum
         std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
         co_yield std::make_pair(true, 0x00);
-        address |= data_in.value_or(0xFF); // address LSB
+        address |= _data_in.value_or(0xFF); // address LSB
         checksum ^= (Byte)(address & 0x00FF);
         // detect invalid sectors (out of bounds)
         if (address > MemoryCard::_LAST_SECTOR) {
@@ -157,14 +157,14 @@ namespace com::saxbophone::wondercard {
         co_return;
     }
 
-    Generator<std::pair<bool, TriState>> MemoryCard::_write_data_command(const TriState& data_in) {
+    Generator<std::pair<bool, TriState>> MemoryCard::_write_data_command() {
         // reply with two ACK bytes
         co_yield std::make_pair(true, 0x5A);
         co_yield std::make_pair(true, 0x5D);
-        Byte checksum = data_in.value_or(0xFF); // reset checksum
+        Byte checksum = _data_in.value_or(0xFF); // reset checksum
         std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
         co_yield std::make_pair(true, 0x00);
-        address |= data_in.value_or(0xFF); // address LSB
+        address |= _data_in.value_or(0xFF); // address LSB
         checksum ^= (Byte)(address & 0x00FF);
         // detect invalid sectors (out of bounds)
         if (address > MemoryCard::_LAST_SECTOR) {
@@ -174,7 +174,7 @@ namespace com::saxbophone::wondercard {
         // write the requested data sector
         for (Byte counter = 0; counter < 128u; ++counter) {
             // grab byte, converting Z-state to 0xFF if encountered (shouldn't, but...)
-            Byte write_byte = data_in.value_or(0xFF);
+            Byte write_byte = _data_in.value_or(0xFF);
             // so long as the sector address is valid, write the sector
             if (address != 0xFFFF) {
                 this->get_sector(address)[counter] = write_byte;
@@ -185,7 +185,7 @@ namespace com::saxbophone::wondercard {
         }
         // checksum
         // set to inverted calculated checksum if no value, to force a bad checksum in that case
-        Byte rx_checksum = data_in.value_or(checksum);
+        Byte rx_checksum = _data_in.value_or(checksum);
         /*
          * take checksum received in command and validate against calculated
          * checksum

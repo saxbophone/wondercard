@@ -123,26 +123,19 @@ namespace com::saxbophone::wondercard {
         std::span<Byte, CARD_SIZE> bytes;
 
     private:
-        Generator<std::pair<bool, TriState>> _process_command(const TriState& data_in);
-
-        Generator<std::pair<bool, TriState>> _read_data_command(const TriState& data_in);
-
-        Generator<std::pair<bool, TriState>> _write_data_command(const TriState& data_in);
-
-        // for exposition of Generator type only
-        static Generator<std::pair<bool, TriState>> _typeof_state_machine(const TriState& data_in);
-
-        using StateMachineType = decltype(_typeof_state_machine(TriState{}));
-        StateMachineType _state_machine = _process_command(_data_in);
-        TriState _data_in;
+        Generator<std::pair<bool, TriState>> _process_command();
+        Generator<std::pair<bool, TriState>> _read_data_command();
+        Generator<std::pair<bool, TriState>> _write_data_command();
 
         const static Byte _FLAG_INIT_VALUE;
         const static std::uint16_t _LAST_SECTOR;
 
         bool _powered_on;
         Byte _flag;  // special FLAG value, a kind of status register on card
+        TriState _data_in;
         // raw card data bytes
         std::array<Byte, CARD_SIZE> _bytes;
+        Generator<std::pair<bool, TriState>> _state_machine = _process_command();
     };
 }
 
