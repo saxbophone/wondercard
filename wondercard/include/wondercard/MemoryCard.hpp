@@ -125,6 +125,10 @@ namespace com::saxbophone::wondercard {
     private:
         Generator<std::pair<bool, TriState>> _state_machine(const TriState& data_in);
 
+        Generator<std::pair<bool, TriState>> _read_data_command(const TriState& data_in);
+
+        Generator<std::pair<bool, TriState>> _write_data_command(const TriState& data_in);
+
         enum class State {
             IDLE,                   /**< Not currently in a communication transaction */
             AWAITING_COMMAND,       /**< Which Memory Card Command mode? */

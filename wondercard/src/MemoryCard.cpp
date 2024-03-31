@@ -127,58 +127,122 @@ namespace com::saxbophone::wondercard {
         // always send FLAG in response to a Memory Card command
         co_yield std::make_pair(true, this->_flag);
         switch (data_in.value_or(0x00)) { // decode memory card command
-        case 0x52: {// READ_DATA_COMMAND
-            // reply with memcard ID
-            co_yield std::make_pair(true, 0x5A);
-            co_yield std::make_pair(true, 0x5D);
-            Byte checksum = data_in.value_or(0xFF); // reset checksum
-            std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
-            co_yield std::make_pair(true, 0x00);
-            address |= data_in.value_or(0xFF);
-            checksum ^= (Byte)(address & 0x00FF);
-            // detect invalid sectors (out of bounds)
-            if (address > MemoryCard::_LAST_SECTOR) {
-                address = 0xFFFF; // poison value
+        case 0x52: { // READ_DATA_COMMAND
+            auto read_gen = _read_data_command(data_in);
+            while (read_gen) {
+                co_yield read_gen();
             }
-            co_yield std::make_pair(true, 0x00);
-            // send two ACK bytes
-            co_yield std::make_pair(true, 0x5C);
-            co_yield std::make_pair(true, 0x5D);
-            // send confirmation of address MSB and LSB
-            co_yield std::make_pair(true, (Byte)(address >> 8));
-            Byte lsb = (Byte)(address & 0x00FF);
-            // we'll only continue if sector address is not a poison value
-            if (address == 0xFFFF) {
-                co_yield std::make_pair(false, lsb);
-                co_return;
-            }
-            co_yield std::make_pair(true, lsb);
-            // send the requested data sector
-            for (Byte counter = 0; counter < 128u; ++counter) {
-                Byte data = this->get_sector(address)[counter];
-                // update checksum
-                checksum ^= data;
-                co_yield std::make_pair(true, data);
-            }
-            // send checksum
-            co_yield std::make_pair(true, checksum);
-            co_yield std::make_pair(false, 0x47); // 0x47: "Good Read"
-            co_return;
             break;
         }
-        case 0x57:
-            // this->_state = MemoryCard::State::WRITE_DATA_COMMAND;
-            // this->_sub_state.write_state = MemoryCard::WriteState::RECV_MEMCARD_ID_1;
+        case 0x57: { // WRITE_DATA_COMMAND
+            auto write_gen = _write_data_command(data_in);
+            while (write_gen) {
+                co_yield write_gen();
+            }
             break;
-        case 0x53:
-            // this->_state = MemoryCard::State::GET_MEMCARD_ID_COMMAND;
-            // this->_sub_state.get_id_state = MemoryCard::GetIdState::RECV_MEMCARD_ID_1;
+        }
+        case 0x53: // GET_MEMCARD_ID_COMMAND
+            for (Byte out : {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00}) {
+                co_yield std::make_pair(true, out);
+            }
+            co_yield std::make_pair(false, 0x80);
             break;
         default:
             co_yield std::make_pair(false, std::nullopt); // No ACK (last byte)
+        }
+        co_return;
+    }
+
+    Generator<std::pair<bool, TriState>> MemoryCard::_read_data_command(const TriState& data_in) {
+        // reply with two ACK bytes
+        co_yield std::make_pair(true, 0x5A);
+        co_yield std::make_pair(true, 0x5D);
+        Byte checksum = data_in.value_or(0xFF); // reset checksum
+        std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
+        co_yield std::make_pair(true, 0x00);
+        address |= data_in.value_or(0xFF); // address LSB
+        checksum ^= (Byte)(address & 0x00FF);
+        // detect invalid sectors (out of bounds)
+        if (address > MemoryCard::_LAST_SECTOR) {
+            address = 0xFFFF; // poison value
+        }
+        co_yield std::make_pair(true, 0x00);
+        // send two ACK bytes
+        co_yield std::make_pair(true, 0x5C);
+        co_yield std::make_pair(true, 0x5D);
+        // send confirmation of address MSB and LSB
+        co_yield std::make_pair(true, (Byte)(address >> 8));
+        Byte lsb = (Byte)(address & 0x00FF);
+        // we'll only continue if sector address is not a poison value
+        if (address == 0xFFFF) {
+            co_yield std::make_pair(false, lsb);
             co_return;
         }
-        // return true; // ACK
+        co_yield std::make_pair(true, lsb);
+        // send the requested data sector
+        for (Byte counter = 0; counter < 128u; ++counter) {
+            Byte data = this->get_sector(address)[counter];
+            // update checksum
+            checksum ^= data;
+            co_yield std::make_pair(true, data);
+        }
+        // send checksum
+        co_yield std::make_pair(true, checksum);
+        co_yield std::make_pair(false, 0x47); // 0x47: "Good Read"
+        co_return;
+    }
+
+    Generator<std::pair<bool, TriState>> MemoryCard::_write_data_command(const TriState& data_in) {
+        // reply with two ACK bytes
+        co_yield std::make_pair(true, 0x5A);
+        co_yield std::make_pair(true, 0x5D);
+        Byte checksum = data_in.value_or(0xFF); // reset checksum
+        std::uint16_t address = (std::uint16_t)checksum << 8; // rx address MSB
+        co_yield std::make_pair(true, 0x00);
+        address |= data_in.value_or(0xFF); // address LSB
+        checksum ^= (Byte)(address & 0x00FF);
+        // detect invalid sectors (out of bounds)
+        if (address > MemoryCard::_LAST_SECTOR) {
+            address = 0xFFFF; // poison value
+        }
+        co_yield std::make_pair(true, 0x00);
+        // write the requested data sector
+        for (Byte counter = 0; counter < 128u; ++counter) {
+            // grab byte, converting Z-state to 0xFF if encountered (shouldn't, but...)
+            Byte write_byte = data_in.value_or(0xFF);
+            // so long as the sector address is valid, write the sector
+            if (address != 0xFFFF) {
+                this->get_sector(address)[counter] = write_byte;
+            }
+            // update the checksum
+            checksum ^= write_byte;
+            co_yield std::make_pair(true, 0x00);
+        }
+        // checksum
+        // set to inverted calculated checksum if no value, to force a bad checksum in that case
+        Byte rx_checksum = data_in.value_or(checksum);
+        /*
+         * take checksum received in command and validate against calculated
+         * checksum
+         * for brevity, store the result of comparison in the checksum
+         */
+        checksum = rx_checksum == checksum ? 0x00 : 0xFF;
+        co_yield std::make_pair(true, 0x00);
+        // send two ACK bytes
+        co_yield std::make_pair(true, 0x5C);
+        co_yield std::make_pair(true, 0x5D);
+        /*
+         * status end byte:
+         * 0x47 = Good, 0x4E = Bad Checksum, 0xFF = Bad Sector
+         */
+        if (address == 0xFFFF) {       // Bad Sector
+            co_yield std::make_pair(true, 0xFF);
+        } else if (checksum == 0xFF) { // Bad Checksum
+            co_yield std::make_pair(true, 0x4E);
+        } else {                       // Good
+            co_yield std::make_pair(false, 0x47);
+        }
+        co_return;
     }
 
     bool MemoryCard::read_data_command(
